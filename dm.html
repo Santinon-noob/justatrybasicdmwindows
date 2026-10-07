@@ -1,0 +1,843 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>DM Toolkit — Jugadores, Monstruos, Mapas y D20</title>
+<style>
+  :root{
+    --bg:#151515; --panel:#1f1f1f; --muted:#bdbdbd; --accent:#2f2f2f;
+    --danger:#b23a3a; --pill:#2b2b2b; --glass:rgba(255,255,255,0.02);
+    --marker:#ffd166; --marker-border:#b07a00;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:Inter,Segoe UI,Arial,sans-serif;background:var(--bg);color:#eee;min-height:100vh}
+  .wrap{display:grid;grid-template-columns:320px 1fr 420px;gap:12px;padding:12px;height:100vh}
+  @media(max-width:1100px){.wrap{grid-template-columns:1fr;grid-auto-rows:min-content;height:auto;padding:8px}.left-col{order:1}.center-col{order:2}.right-col{order:3}}
+  .panel{background:var(--panel);border-radius:8px;padding:12px;box-shadow:0 2px 8px rgba(0,0,0,0.6);display:flex;flex-direction:column;gap:8px;min-height:120px;overflow:auto}
+  h3{margin:0 0 6px 0;color:var(--muted);font-weight:600;font-size:0.95rem}
+  .row{display:flex;gap:8px;align-items:center}
+  .muted{color:var(--muted);font-size:0.9rem}
+  .btn{background:var(--accent);border:0;color:#fff;padding:8px 10px;border-radius:6px;cursor:pointer}
+  .btn.small{padding:6px 8px;font-size:0.9rem}
+  input[type="text"], input[type="number"], select, textarea{background:transparent;border:1px solid rgba(255,255,255,0.04);color:#fff;padding:8px;border-radius:6px}
+  .input-num{width:80px;padding:6px;border-radius:6px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:#fff}
+
+  /* Monsters */
+  .monster-top{display:flex;gap:8px;align-items:center}
+  .monster-search{flex:1;padding:8px;border-radius:6px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:#fff}
+  .monster-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;max-height:36vh;overflow:auto;padding:6px}
+  .monster-btn{background:var(--accent);border:0;color:#eee;padding:8px;border-radius:6px;cursor:pointer;display:flex;align-items:center;gap:8px;justify-content:flex-start}
+  .monster-btn img{width:40px;height:40px;object-fit:cover;border-radius:6px}
+  .monster-empty{color:var(--muted);padding:12px;text-align:center}
+  .monsters-active{display:flex;flex-direction:column;gap:8px;max-height:36vh;overflow:auto;padding-right:6px}
+  .monster-card{background:#222;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.03);display:flex;flex-direction:column;gap:8px}
+  .monster-card img{width:40px;height:40px;object-fit:cover;border-radius:6px}
+  .monster-states{display:flex;gap:6px;flex-wrap:wrap}
+  .state-pill{background:var(--pill);padding:6px 8px;border-radius:999px;color:var(--muted);font-size:0.85rem;cursor:pointer}
+  .state-pill.active{background:#3a3a3a;color:#fff}
+
+  /* Players */
+  .players-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px}
+  .player-card{background:#222;padding:10px;border-radius:8px;display:flex;flex-direction:column;gap:8px;border:1px solid rgba(255,255,255,0.03)}
+  .player-top{display:flex;align-items:center;gap:10px}
+  .hp{flex:1;height:14px;background:#111;border-radius:8px;overflow:hidden;border:1px solid rgba(255,255,255,0.03)}
+  .hp .fill{height:100%;background:linear-gradient(90deg,var(--danger),#ff6b6b);width:100%}
+  .controls-row{display:flex;gap:6px;flex-wrap:wrap}
+
+  /* Preview thumb: force limits and cover */
+  .preview-thumb {
+    display: none;
+    width: 96px;
+    height: 96px;
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 1px solid rgba(255,255,255,0.04);
+  }
+
+  /* Map area under players */
+  .map-area{margin-top:12px;background:#0f0f0f;border-radius:8px;padding:8px;border:1px solid rgba(255,255,255,0.04)}
+  .map-canvas{position:relative;width:100%;height:320px;background:#111;border-radius:6px;overflow:hidden;display:flex;align-items:center;justify-content:center}
+  .map-canvas img{max-width:100%;max-height:100%;object-fit:contain;display:block}
+  .marker{
+    position:absolute;
+    width:18px;height:18px;border-radius:50%;
+    background:var(--marker);border:2px solid var(--marker-border);
+    transform:translate(-50%,-50%);cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,0.5);
+    display:flex;align-items:center;justify-content:center;font-size:11px;color:#111;font-weight:700;
+  }
+  .marker-label{position:absolute;white-space:nowrap;background:rgba(0,0,0,0.7);padding:4px 8px;border-radius:6px;font-size:12px;color:#fff;transform:translate(-50%, -140%);display:none}
+  .marker:hover + .marker-label{display:block}
+
+  /* Maps list */
+  .maps-list{display:flex;flex-direction:column;gap:8px;max-height:22vh;overflow:auto;padding-right:6px}
+  .map-item{display:flex;gap:8px;align-items:center;background:#1a1a1a;padding:6px;border-radius:6px}
+  .map-thumb{width:56px;height:40px;object-fit:cover;border-radius:4px;border:1px solid rgba(255,255,255,0.04)}
+  .log{background:#0f0f0f;border-radius:8px;padding:8px;height:22vh;overflow:auto;color:var(--muted);font-size:0.9rem}
+
+  /* Dice modal */
+  #dice-modal { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; background: rgba(0,0,0,0.55); z-index: 9999; }
+  .dice-card { width: 220px; height: 220px; perspective: 900px; display:flex; align-items:center; justify-content:center; }
+  .dice-3d { width: 140px; height: 140px; transform-style: preserve-3d; transition: transform 600ms cubic-bezier(.2,.9,.2,1); position: relative; }
+  .dice-face { position: absolute; inset: 0; display:flex; align-items:center; justify-content:center; border-radius:12px; background: linear-gradient(180deg,#fff,#e6e6e6); color:#111; font-weight:700; font-size:48px; box-shadow: 0 6px 18px rgba(0,0,0,0.45), inset 0 -6px 12px rgba(0,0,0,0.06); backface-visibility: hidden; }
+  .face-front  { transform: translateZ(70px); }
+  .face-back   { transform: rotateY(180deg) translateZ(70px); }
+  .face-right  { transform: rotateY(90deg) translateZ(70px); }
+  .face-left   { transform: rotateY(-90deg) translateZ(70px); }
+  .face-top    { transform: rotateX(90deg) translateZ(70px); }
+  .face-bottom { transform: rotateX(-90deg) translateZ(70px); }
+  @keyframes dice-spin { from { transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg); } to { transform: rotateX(1080deg) rotateY(720deg) rotateZ(360deg); } }
+  .dice-result { margin-top:12px; text-align:center; color:#fff; font-weight:700; font-size:20px; }
+  .dice-controls { display:flex; gap:8px; justify-content:center; margin-top:10px; }
+  .dice-controls button { padding:8px 12px; border-radius:8px; border:0; cursor:pointer; background:#333; color:#fff; }
+  .dice-controls button:hover { background:#444; }
+
+  .selected{outline:2px solid rgba(63,198,63,0.18);box-shadow:0 0 12px rgba(63,198,63,0.06)}
+  .small-muted{font-size:0.85rem;color:var(--muted)}
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <!-- LEFT: Monsters -->
+    <section class="panel left-col" aria-label="Monstruos">
+      <h3>Monstruos</h3>
+      <div class="monster-top">
+        <input id="monster-search" class="monster-search" placeholder="Buscar monstruo..." oninput="filterMonsters()" />
+        <div style="display:flex;gap:8px">
+          <button class="btn" onclick="invocarMonstruo()">Invocar</button>
+          <button class="btn" onclick="abrirModalCrearMonstruo()">Crear</button>
+        </div>
+      </div>
+
+      <div class="monster-grid" id="default-monsters" aria-live="polite">
+        <div class="monster-empty" id="monster-empty">No hay monstruos. Usa "Crear" para añadirlos.</div>
+      </div>
+
+      <h3 style="margin-top:8px">Monstruos activos</h3>
+      <div class="monsters-active" id="monstruos-activos"></div>
+    </section>
+
+    <!-- CENTER: Players + projected map -->
+    <main class="panel center-col" aria-label="Jugadores">
+      <h3>Jugadores</h3>
+      <div style="display:flex;gap:8px;align-items:center">
+        <input id="new-player-name" type="text" placeholder="Nombre jugador (ej: Bárbaro)" />
+        <button class="btn" onclick="addPlayer()">Agregar</button>
+        <button class="btn" onclick="resetPlayersToDefault()">Restaurar por defecto</button>
+      </div>
+
+      <div class="players-grid" id="players-list"></div>
+
+      <!-- MAPA VISIBLE BAJO JUGADORES -->
+      <div class="map-area" aria-label="Mapa proyectado">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div class="muted">Mapa proyectado</div>
+          <div style="display:flex;gap:8px;align-items:center">
+            <button class="btn small" id="toggle-add-mode" onclick="toggleAddMode()">Modo: Añadir</button>
+            <button class="btn small" id="toggle-remove-mode" onclick="toggleRemoveMode()">Modo: Quitar</button>
+            <button class="btn small" onclick="clearMarkersCurrentMap()">Limpiar marcadores</button>
+          </div>
+        </div>
+
+        <div class="map-canvas" id="map-canvas" title="Haz clic para añadir marcador (modo añadir)">
+          <img id="map-canvas-img" alt="Mapa proyectado">
+        </div>
+
+        <div style="margin-top:8px" class="muted">Marcadores en este mapa</div>
+        <div id="markers-list" style="display:flex;flex-direction:column;gap:6px;max-height:120px;overflow:auto;padding-right:6px"></div>
+      </div>
+
+      <div style="margin-top:8px" class="muted">Jugador seleccionado: <strong id="jugador-seleccionado">Ninguno</strong></div>
+    </main>
+
+    <!-- RIGHT: Preview / Map tools / Log -->
+    <aside class="panel right-col" aria-label="Control">
+      <h3>Vista previa</h3>
+      <div class="preview-box" id="preview" style="display:flex;gap:12px;align-items:center">
+        <img id="preview-thumb" class="preview-thumb" alt="thumb">
+        <div class="preview-info">
+          <div id="preview-title" style="font-weight:700">Vista previa</div>
+          <div id="preview-sub" class="muted" style="margin-top:6px">Selecciona un monstruo o mapa para ver aquí.</div>
+        </div>
+      </div>
+
+      <h3 style="margin-top:12px">Control</h3>
+      <div style="display:flex;justify-content:center;align-items:center;margin:8px 0">
+        <button class="btn" onclick="tirarDado()">Tirar d20</button>
+      </div>
+
+      <div class="row" style="gap:8px;margin-top:6px">
+        <button class="btn" onclick="mostrarMapa()">Mostrar mapa</button>
+        <button class="btn" onclick="reiniciar()">Reiniciar</button>
+        <button class="btn" onclick="limpiarPreview()">Limpiar preview</button>
+      </div>
+
+      <h3 style="margin-top:12px">Mapas (crear / guardar / reutilizar)</h3>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <input id="map-file" type="file" accept="image/*" onchange="previewMapFile(event)">
+        <div style="display:flex;gap:8px;align-items:center">
+          <input id="map-name" type="text" placeholder="Nombre para guardar mapa" />
+          <button class="btn" onclick="saveCurrentMap()">Guardar mapa</button>
+        </div>
+        <img id="map-preview" class="map-preview" alt="map preview" style="display:none;width:100%;height:120px;object-fit:cover;border-radius:6px;border:1px solid rgba(255,255,255,0.04)">
+        <div class="muted">Mapas guardados</div>
+        <div class="maps-list" id="maps-list"></div>
+      </div>
+
+      <h3 style="margin-top:12px">Registro</h3>
+      <div class="log" id="log" aria-live="polite"></div>
+    </aside>
+  </div>
+
+  <!-- Modal crear monstruo -->
+  <div id="modal-backdrop" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);align-items:center;justify-content:center;z-index:60">
+    <div style="background:var(--panel);padding:14px;border-radius:8px;width:360px;max-width:95%">
+      <h3 style="margin:0 0 8px 0">Crear monstruo</h3>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <input id="nuevo-nombre" placeholder="Nombre" />
+        <input id="nuevo-archivo" type="file" accept="image/*">
+        <input id="nuevo-hp" type="number" min="1" max="2000" value="100" />
+        <div style="display:flex;justify-content:flex-end;gap:8px">
+          <button class="btn" onclick="cerrarModalCrearMonstruo()">Cancelar</button>
+          <button class="btn" onclick="crearMonstruoDesdeModal()">Crear</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DICE MODAL -->
+  <div id="dice-modal" role="dialog" aria-modal="true" aria-label="Dado d20 animado" style="display:none">
+    <div style="display:flex;flex-direction:column;align-items:center;gap:6px">
+      <div class="dice-card" aria-hidden="false">
+        <div id="dice-3d" class="dice-3d" aria-hidden="true">
+          <div class="dice-face face-front" id="face-front">20</div>
+          <div class="dice-face face-back" id="face-back">7</div>
+          <div class="dice-face face-right" id="face-right">13</div>
+          <div class="dice-face face-left" id="face-left">2</div>
+          <div class="dice-face face-top" id="face-top">18</div>
+          <div class="dice-face face-bottom" id="face-bottom">5</div>
+        </div>
+      </div>
+
+      <div class="dice-result" id="dice-result" aria-live="polite">Tirando...</div>
+
+      <div class="dice-controls">
+        <button id="dice-roll-again">Volver a tirar</button>
+        <button id="dice-stop">Detener</button>
+        <button id="dice-close">Cerrar</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+/* ---------- Helpers ---------- */
+function slugify(s){ return String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-zA-Z0-9\s-]/g,'').trim().toLowerCase().replace(/\s+/g,'-'); }
+function escapeHtml(s){ return String(s).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;'); }
+function log(msg){ const el=document.getElementById('log'); const t=new Date().toLocaleTimeString(); el.innerHTML += `<div>[${t}] ${escapeHtml(msg)}</div>`; el.scrollTop = el.scrollHeight; }
+
+/* ---------- Persistence keys ---------- */
+const LS_PLAYERS = 'dm_players_v1';
+const LS_MAPS = 'dm_maps_v1';
+
+/* ---------- Players: dynamic add/remove and persistence ---------- */
+let players = {};
+function defaultPlayers(){
+  return {
+    guerrero:{key:'guerrero',name:'Guerrero',hp:85,maxHp:100,states:[]},
+    maga:{key:'maga',name:'Maga',hp:60,maxHp:100,states:[]},
+    picaro:{key:'picaro',name:'Pícaro',hp:45,maxHp:100,states:[]},
+    clerigo:{key:'clerigo',name:'Clérigo',hp:75,maxHp:100,states:[]}
+  };
+}
+function loadPlayers(){
+  try{ const raw = localStorage.getItem(LS_PLAYERS); players = raw ? JSON.parse(raw) : defaultPlayers(); }catch(e){ players = defaultPlayers(); }
+}
+function savePlayers(){ try{ localStorage.setItem(LS_PLAYERS, JSON.stringify(players)); }catch(e){} }
+function addPlayer(){
+  const nameInput = document.getElementById('new-player-name');
+  const name = (nameInput.value || '').trim();
+  if(!name){ alert('Ingresa un nombre para el jugador'); return; }
+  const keyBase = slugify(name) || 'player';
+  let key = keyBase; let i = 1;
+  while(players[key]){ key = keyBase + '-' + i; i++; }
+  players[key] = { key, name, hp:100, maxHp:100, states:[] };
+  nameInput.value = '';
+  renderPlayers(); savePlayers(); log(`Jugador agregado: ${name}`);
+}
+function removePlayer(key){
+  if(!players[key]) return;
+  if(!confirm(`Eliminar jugador "${players[key].name}"?`)) return;
+  delete players[key]; renderPlayers(); savePlayers(); log(`Jugador eliminado: ${key}`);
+}
+function resetPlayersToDefault(){
+  if(!confirm('Restaurar jugadores por defecto y perder cambios?')) return;
+  players = defaultPlayers(); renderPlayers(); savePlayers(); log('Jugadores restaurados a valores por defecto');
+}
+function renderPlayers(){
+  const container = document.getElementById('players-list'); container.innerHTML = '';
+  Object.values(players).forEach(p=>{
+    const card = document.createElement('div'); card.className = 'player-card'; card.id = 'player-' + p.key;
+    card.innerHTML = `
+      <div class="player-top">
+        <input type="text" id="name-${p.key}" value="${escapeHtml(p.name)}" />
+        <div style="margin-left:auto;text-align:right">
+          <div class="muted" style="font-size:0.85rem">HP <strong id="label-${p.key}">${p.hp}</strong> / <span id="max-${p.key}">${p.maxHp}</span></div>
+        </div>
+      </div>
+      <div class="hp-row">
+        <div class="hp" id="hp-${p.key}"><div class="fill" style="width:${Math.round((p.hp/p.maxHp)*100)}%"></div></div>
+      </div>
+      <div class="controls-row">
+        <button class="btn small" onclick="seleccionarJugador('${p.key}')">Seleccionar</button>
+        <button class="btn small" onclick="changeHP('${p.key}',-10)">-10</button>
+        <button class="btn small" onclick="changeHP('${p.key}',+10)">+10</button>
+        <input class="input-num" id="manual-${p.key}" type="number" placeholder="+/-">
+        <button class="btn small" onclick="applyManual('${p.key}')">Aplicar</button>
+      </div>
+      <div class="controls-row" style="margin-top:6px;align-items:center">
+        <input class="input-num" id="setmax-${p.key}" type="number" min="1" max="2000" placeholder="Max HP">
+        <button class="btn small" onclick="setMaxHP('${p.key}')">Set Max</button>
+        <button class="btn small" onclick="restoreToMax('${p.key}')">Restaurar</button>
+        <button class="btn small" onclick="removePlayer('${p.key}')">Eliminar</button>
+      </div>
+      <div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap" id="pstates-${p.key}"></div>
+    `;
+    container.appendChild(card);
+    card.querySelector('#name-' + p.key).addEventListener('change', e=>{
+      p.name = e.target.value || p.name; savePlayers(); if(jugadorSeleccionado === p.key) document.getElementById('jugador-seleccionado').innerText = p.name; log(`Nombre cambiado: ${p.key} ahora es ${p.name}`);
+    });
+    renderPlayerStates(p.key);
+  });
+}
+
+/* Player HP & states */
+let jugadorSeleccionado = null;
+const playerStateOptions = ['Veneno','Fuego','Congelación','Parálisis'];
+function updatePlayerUI(key){ const p = players[key]; if(!p) return; const fill = document.querySelector(`#hp-${key} .fill`); const percent = Math.round((p.hp / p.maxHp) * 100); if(fill) fill.style.width = percent + '%'; const label = document.getElementById('label-' + key); const maxlabel = document.getElementById('max-' + key); if(label) label.innerText = p.hp; if(maxlabel) maxlabel.innerText = p.maxHp; renderPlayerStates(key); savePlayers(); }
+function changeHP(key, delta){ const p = players[key]; if(!p) return; p.hp = Math.max(0, Math.min(p.maxHp, p.hp + delta)); updatePlayerUI(key); log(`${p.name} HP modificado: ${delta} (ahora ${p.hp}/${p.maxHp})`); }
+function applyManual(key){ const input = document.getElementById('manual-' + key); if(!input) return; const val = parseInt(input.value); if(Number.isNaN(val)){ alert('Ingresa un número válido'); return; } changeHP(key, val); input.value=''; }
+function setMaxHP(key){ const input = document.getElementById('setmax-' + key); if(!input) return; let val = parseInt(input.value); if(Number.isNaN(val) || val < 1){ alert('Vida máxima inválida'); return; } const p = players[key]; p.maxHp = Math.min(2000, val); if(p.hp > p.maxHp) p.hp = p.maxHp; updatePlayerUI(key); input.value=''; log(`${p.name} vida máxima establecida en ${p.maxHp}`); }
+function restoreToMax(key){ const p = players[key]; if(!p) return; p.hp = p.maxHp; updatePlayerUI(key); log(`${p.name} restaurado a vida máxima (${p.maxHp})`); }
+function seleccionarJugador(key){ jugadorSeleccionado = key; document.getElementById('jugador-seleccionado').innerText = players[key].name; document.querySelectorAll('.player-card').forEach(c=>c.classList.remove('selected')); const card = document.getElementById('player-' + key); if(card) card.classList.add('selected'); log(`Jugador seleccionado: ${players[key].name}`); }
+function togglePlayerState(key, state){ const p = players[key]; if(!p) return; const idx = p.states.indexOf(state); if(idx === -1) p.states.push(state); else p.states.splice(idx,1); renderPlayerStates(key); savePlayers(); log(`${p.name} estados: ${p.states.join(', ') || 'ninguno'}`); }
+function renderPlayerStates(key){ const p = players[key]; if(!p) return; const container = document.getElementById('pstates-' + key); container.innerHTML = ''; playerStateOptions.forEach(s=>{ const span=document.createElement('div'); span.className='state-pill' + (p.states.includes(s)?' active':''); span.innerText=s; span.onclick=()=>togglePlayerState(key,s); container.appendChild(span); }); }
+
+/* ---------- Monsters (modal + create + invoke) ---------- */
+const defaultList = []; // start empty by design
+const defaultContainer = document.getElementById('default-monsters');
+let monstruoSeleccionado = null;
+let monstruosActivos = {};
+const customMonsters = {};
+
+function renderMonsterButtons(){
+  defaultContainer.innerHTML = '';
+  if(defaultList.length === 0){
+    const empty = document.createElement('div');
+    empty.className = 'monster-empty';
+    empty.id = 'monster-empty';
+    empty.innerText = 'No hay monstruos. Usa "Crear" para añadirlos.';
+    defaultContainer.appendChild(empty);
+    return;
+  }
+  defaultList.forEach(name=>{
+    const key = slugify(name);
+    const btn = document.createElement('button');
+    btn.className = 'monster-btn';
+    btn.title = name;
+    btn.onclick = ()=> seleccionarMonstruo(name);
+    if(customMonsters[key] && customMonsters[key].imgUrl){
+      const img = document.createElement('img'); img.src = customMonsters[key].imgUrl; img.alt = name; btn.appendChild(img);
+    }
+    const span = document.createElement('span'); span.innerText = name;
+    btn.appendChild(span);
+    defaultContainer.appendChild(btn);
+  });
+}
+
+function filterMonsters(){ const q = document.getElementById('monster-search').value.trim().toLowerCase(); const buttons = defaultContainer.querySelectorAll('.monster-btn'); buttons.forEach(b=>{ const txt = b.innerText.toLowerCase(); b.style.display = txt.includes(q) ? 'flex' : 'none'; }); }
+
+function abrirModalCrearMonstruo(){ document.getElementById('modal-backdrop').style.display='flex'; document.getElementById('nuevo-nombre').value=''; document.getElementById('nuevo-archivo').value=''; document.getElementById('nuevo-hp').value=100; }
+function cerrarModalCrearMonstruo(){ document.getElementById('modal-backdrop').style.display='none'; }
+
+/* Resize helper: convert image file to dataURL resized to maxSize (px) */
+function resizeImageFileToDataURL(file, maxSize, callback){
+  const reader = new FileReader();
+  reader.onload = function(ev){
+    const img = new Image();
+    img.onload = function(){
+      let w = img.width, h = img.height;
+      const ratio = w / h;
+      if(w > h){
+        if(w > maxSize){ w = maxSize; h = Math.round(maxSize / ratio); }
+      } else {
+        if(h > maxSize){ h = maxSize; w = Math.round(maxSize * ratio); }
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = w;
+      canvas.height = h;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, w, h);
+      const dataUrl = canvas.toDataURL('image/png');
+      callback(null, dataUrl);
+    };
+    img.onerror = function(){ callback(new Error('Error cargando imagen')); };
+    img.src = ev.target.result;
+  };
+  reader.onerror = function(){ callback(new Error('Error leyendo archivo')); };
+  reader.readAsDataURL(file);
+}
+
+function crearMonstruoDesdeModal(){
+  const nombre=document.getElementById('nuevo-nombre').value.trim();
+  const archivo=document.getElementById('nuevo-archivo').files[0];
+  const hp=Math.max(1,Math.min(2000,parseInt(document.getElementById('nuevo-hp').value)||100));
+  if(!nombre){ alert('Nombre requerido'); return; }
+  const key=slugify(nombre);
+
+  function finalizeCreate(imgUrl){
+    customMonsters[key]={name:nombre,imgUrl:imgUrl,maxHp:hp};
+    defaultList.unshift(nombre);
+    renderMonsterButtons();
+    cerrarModalCrearMonstruo();
+    log(`Monstruo personalizado creado: ${nombre} (HP ${hp})`);
+    seleccionarMonstruo(nombre);
+  }
+
+  if(archivo){
+    // resize to 160px max for thumbnail (adjust if desired)
+    resizeImageFileToDataURL(archivo, 160, function(err, dataUrl){
+      if(err){
+        // fallback to object URL if resizing fails
+        const fallback = URL.createObjectURL(archivo);
+        finalizeCreate(fallback);
+      } else {
+        finalizeCreate(dataUrl);
+      }
+    });
+  } else {
+    finalizeCreate(null);
+  }
+}
+
+function seleccionarMonstruo(name){ monstruoSeleccionado = name; renderPreview(name); log('Monstruo preparado: ' + name); }
+function invocarMonstruo(){
+  if(!monstruoSeleccionado){ log('Selecciona un monstruo primero'); return; }
+  const uid = slugify(monstruoSeleccionado) + '-' + Date.now();
+  const key = slugify(monstruoSeleccionado);
+  const maxHp = (customMonsters[key] && customMonsters[key].maxHp) ? customMonsters[key].maxHp : 100;
+  monstruosActivos[uid] = { name:monstruoSeleccionado, hp:maxHp, maxHp:maxHp, states:[], img:(customMonsters[key] && customMonsters[key].imgUrl) || null };
+  renderMonstruoActivo(uid);
+  renderPreview(monstruoSeleccionado);
+  log('Monstruo invocado: ' + monstruoSeleccionado);
+}
+
+function renderMonstruoActivo(uid){
+  const m = monstruosActivos[uid];
+  const wrap = document.getElementById('monstruos-activos');
+  const el = document.createElement('div');
+  el.className = 'monster-card';
+  el.id = 'monster-' + uid;
+  el.innerHTML = `
+    <div class="row">
+      <div style="display:flex;gap:8px;align-items:center">
+        ${m.img ? `<img src="${m.img}" style="width:40px;height:40px;object-fit:cover;border-radius:6px">` : ''}
+        <div><strong>${escapeHtml(m.name)}</strong><div class="muted" id="mlabel-${uid}">${m.hp}/${m.maxHp}</div></div>
+      </div>
+      <div style="display:flex;gap:6px">
+        <button class="btn small" onclick="modificarHPMonstruo('${uid}',-10);event.stopPropagation()">-10</button>
+        <button class="btn small" onclick="modificarHPMonstruo('${uid}',+10);event.stopPropagation()">+10</button>
+        <button class="btn small" onclick="eliminarMonstruo('${uid}');event.stopPropagation()">Eliminar</button>
+      </div>
+    </div>
+    <div style="margin-top:8px" class="hp small" id="mhp-${uid}"><div class="fill" style="width:100%"></div></div>
+    <div id="states-${uid}" class="monster-states" style="margin-top:8px"></div>
+  `;
+  el.onclick = ()=> seleccionarMonstruoActivo(uid);
+  wrap.prepend(el);
+  renderStatesFor(uid);
+}
+
+function modificarHPMonstruo(uid, delta){ const m = monstruosActivos[uid]; if(!m) return; m.hp = Math.max(0, Math.min(m.maxHp, m.hp + delta)); const label=document.getElementById('mlabel-'+uid); const fill=document.querySelector(`#mhp-${uid} .fill`); const percent=Math.round((m.hp/m.maxHp)*100); if(label) label.innerText = `${m.hp}/${m.maxHp}`; if(fill) fill.style.width = percent + '%'; log(`${m.name} HP modificado: ${delta} (ahora ${m.hp}/${m.maxHp})`); if(m.hp<=0) setTimeout(()=> eliminarMonstruo(uid),250); }
+function eliminarMonstruo(uid){ const m=monstruosActivos[uid]; if(!m) return; const el=document.getElementById('monster-'+uid); if(el) el.remove(); delete monstruosActivos[uid]; log(`Monstruo eliminado: ${m.name}`); }
+
+let monstruoUIDSeleccionado = null;
+function seleccionarMonstruoActivo(uid){ document.querySelectorAll('#monstruos-activos .monster-card').forEach(c=>c.classList.remove('selected')); const card=document.getElementById('monster-'+uid); if(card) card.classList.add('selected'); monstruoUIDSeleccionado = uid; renderStatesFor(uid); log(`Monstruo activo seleccionado: ${monstruosActivos[uid].name}`); }
+
+/* Monster states per-card */
+const monsterStateOptions = ['Veneno','Fuego','Congelación','Parálisis'];
+function renderStatesFor(uid){
+  const m = monstruosActivos[uid]; if(!m) return;
+  const container = document.getElementById('states-' + uid);
+  if(!container) return;
+  container.innerHTML = '';
+  monsterStateOptions.forEach(s=>{
+    const span = document.createElement('div');
+    span.className = 'state-pill' + (m.states.includes(s) ? ' active' : '');
+    span.innerText = s;
+    span.onclick = (e)=>{ e.stopPropagation(); const idx = m.states.indexOf(s); if(idx===-1) m.states.push(s); else m.states.splice(idx,1); renderStatesFor(uid); log(`${m.name} estados: ${m.states.join(', ') || 'ninguno'}`); };
+    container.appendChild(span);
+  });
+}
+
+/* ---------- Preview ---------- */
+function renderPreview(name){
+  const previewThumb = document.getElementById('preview-thumb');
+  const title = document.getElementById('preview-title');
+  const sub = document.getElementById('preview-sub');
+
+  if(!name){
+    previewThumb.style.display = 'none';
+    previewThumb.src = '';
+    title.innerText = 'Vista previa';
+    sub.innerText = 'Selecciona un monstruo o mapa para ver aquí.';
+    return;
+  }
+
+  const key = slugify(name);
+  const custom = customMonsters[key];
+
+  if(custom && custom.imgUrl){
+    previewThumb.src = custom.imgUrl;
+    previewThumb.style.display = 'block';
+    title.innerText = custom.name;
+    sub.innerText = `HP máx: ${custom.maxHp}`;
+  } else {
+    previewThumb.style.display = 'none';
+    previewThumb.src = '';
+    title.innerText = name;
+    sub.innerText = 'Sin miniatura';
+  }
+}
+
+/* ---------- Maps: save/load with markers ---------- */
+let currentMap = { src:null, preset:null, id:null, name:null, markers:[] }; // markers: [{id,x,y,label}]
+const mapsKey = LS_MAPS;
+function loadMaps(){ try{ const raw = localStorage.getItem(mapsKey); return raw ? JSON.parse(raw) : []; }catch(e){ return []; } }
+function saveMaps(list){ try{ localStorage.setItem(mapsKey, JSON.stringify(list)); }catch(e){} }
+
+function previewMapFile(e){
+  const file = e.target.files && e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = function(ev){
+    currentMap.src = ev.target.result;
+    currentMap.preset = null;
+    currentMap.id = null;
+    currentMap.name = file.name;
+    currentMap.markers = [];
+    document.getElementById('map-preview').src = currentMap.src;
+    document.getElementById('map-preview').style.display = 'block';
+    setProjectedMap(currentMap);
+    log(`Mapa cargado para previsualizar: ${file.name}`);
+  };
+  reader.readAsDataURL(file);
+}
+
+function saveCurrentMap(){
+  const name = (document.getElementById('map-name').value || '').trim();
+  if(!currentMap.src){ alert('No hay mapa cargado para guardar'); return; }
+  if(!name){ alert('Ingresa un nombre para el mapa'); return; }
+  const maps = loadMaps();
+  const mapObj = { id: Date.now().toString(), name, dataUrl: currentMap.src, markers: currentMap.markers || [] };
+  maps.unshift(mapObj);
+  saveMaps(maps);
+  document.getElementById('map-name').value = '';
+  renderMapsList();
+  log(`Mapa guardado: ${name}`);
+}
+
+function renderMapsList(){
+  const list = loadMaps();
+  const wrap = document.getElementById('maps-list'); wrap.innerHTML = '';
+  if(list.length === 0){ wrap.innerHTML = '<div class="muted">No hay mapas guardados.</div>'; return; }
+  list.forEach(m=>{
+    const el = document.createElement('div'); el.className = 'map-item';
+    el.innerHTML = `<img class="map-thumb" src="${m.dataUrl}" alt="${escapeHtml(m.name)}"><div style="flex:1"><div style="font-weight:600">${escapeHtml(m.name)}</div></div><div style="display:flex;gap:6px"><button class="btn small" onclick="loadMap('${m.id}')">Cargar</button><button class="btn small" onclick="deleteMap('${m.id}')">Eliminar</button></div>`;
+    wrap.appendChild(el);
+  });
+}
+
+function loadMap(id){
+  const maps = loadMaps();
+  const m = maps.find(x=>x.id===id);
+  if(!m) return;
+  currentMap.src = m.dataUrl; currentMap.name = m.name; currentMap.id = m.id; currentMap.markers = m.markers || [];
+  document.getElementById('map-preview').src = currentMap.src; document.getElementById('map-preview').style.display = 'block';
+  setProjectedMap(currentMap);
+  log(`Mapa cargado: ${m.name}`);
+}
+
+function deleteMap(id){
+  if(!confirm('Eliminar mapa guardado?')) return;
+  let maps = loadMaps(); maps = maps.filter(x=>x.id!==id); saveMaps(maps); renderMapsList(); log('Mapa eliminado');
+}
+
+/* ---------- Projected map + markers interaction ---------- */
+const canvas = document.getElementById('map-canvas');
+const canvasImg = document.getElementById('map-canvas-img');
+let addMode = true;
+let removeMode = false;
+
+function setProjectedMap(mapObj){
+  if(!mapObj || !mapObj.src){ canvasImg.src = ''; canvasImg.style.display = 'none'; clearMarkersDOM(); currentMap = { src:null, preset:null, id:null, name:null, markers:[] }; renderMarkersList(); return; }
+  canvasImg.src = mapObj.src; canvasImg.style.display = 'block';
+  setTimeout(()=> renderMarkersOnCanvas(), 120);
+}
+
+function toggleAddMode(){
+  addMode = !addMode;
+  if(addMode){ removeMode = false; document.getElementById('toggle-add-mode').innerText = 'Modo: Añadir'; document.getElementById('toggle-remove-mode').innerText = 'Modo: Quitar'; }
+  else document.getElementById('toggle-add-mode').innerText = 'Modo: Añadir (off)';
+}
+function toggleRemoveMode(){
+  removeMode = !removeMode;
+  if(removeMode){ addMode = false; document.getElementById('toggle-remove-mode').innerText = 'Modo: Quitar'; document.getElementById('toggle-add-mode').innerText = 'Modo: Añadir'; }
+  else document.getElementById('toggle-remove-mode').innerText = 'Modo: Quitar (off)';
+}
+
+canvas.addEventListener('click', (e)=>{
+  if(!currentMap.src){ log('No hay mapa proyectado. Carga o guarda uno.'); return; }
+  const rect = canvas.getBoundingClientRect();
+  const x = (e.clientX - rect.left) / rect.width;
+  const y = (e.clientY - rect.top) / rect.height;
+  if(removeMode){
+    const nearest = findNearestMarker(x,y,0.03);
+    if(nearest) { removeMarkerById(nearest.id); saveCurrentMapMarkers(); }
+    return;
+  }
+  if(!addMode) { log('Activa "Modo: Añadir" para colocar marcadores'); return; }
+  const label = prompt('Nombre del punto de interés (dejar vacío para "Punto")') || 'Punto';
+  const id = Date.now().toString();
+  const marker = { id, x: clamp01(x), y: clamp01(y), label };
+  currentMap.markers = currentMap.markers || [];
+  currentMap.markers.push(marker);
+  renderMarkersOnCanvas();
+  saveCurrentMapMarkers();
+  log(`Marcador agregado: ${label}`);
+});
+
+function clamp01(v){ return Math.max(0, Math.min(1, v)); }
+
+function findNearestMarker(x,y,threshold){
+  if(!currentMap.markers || currentMap.markers.length===0) return null;
+  let best = null; let bestDist = Infinity;
+  currentMap.markers.forEach(m=>{
+    const dx = m.x - x; const dy = m.y - y; const d = Math.sqrt(dx*dx + dy*dy);
+    if(d < bestDist){ bestDist = d; best = m; }
+  });
+  return bestDist <= threshold ? best : null;
+}
+
+function renderMarkersOnCanvas(){
+  clearMarkersDOM();
+  const wrap = document.getElementById('map-canvas');
+  if(!currentMap.markers || currentMap.markers.length===0) { renderMarkersList(); return; }
+  currentMap.markers.forEach((m, idx)=>{
+    const el = document.createElement('div');
+    el.className = 'marker';
+    el.style.left = (m.x * 100) + '%';
+    el.style.top = (m.y * 100) + '%';
+    el.title = m.label;
+    el.innerText = (idx+1);
+    el.dataset.id = m.id;
+    const lbl = document.createElement('div'); lbl.className = 'marker-label'; lbl.innerText = m.label;
+    el.addEventListener('click', (ev)=>{
+      ev.stopPropagation();
+      if(removeMode){
+        if(confirm(`Eliminar marcador "${m.label}"?`)){ removeMarkerById(m.id); saveCurrentMapMarkers(); }
+        return;
+      }
+      const newLabel = prompt('Editar etiqueta del marcador', m.label);
+      if(newLabel !== null){ m.label = newLabel || m.label; renderMarkersOnCanvas(); saveCurrentMapMarkers(); log(`Marcador renombrado: ${m.label}`); }
+    });
+    wrap.appendChild(el);
+    wrap.appendChild(lbl);
+  });
+  renderMarkersList();
+}
+
+function clearMarkersDOM(){
+  const wrap = document.getElementById('map-canvas');
+  Array.from(wrap.querySelectorAll('.marker')).forEach(n=>n.remove());
+  Array.from(wrap.querySelectorAll('.marker-label')).forEach(n=>n.remove());
+}
+
+function removeMarkerById(id){
+  if(!currentMap.markers) return;
+  currentMap.markers = currentMap.markers.filter(m=>m.id !== id);
+  renderMarkersOnCanvas();
+  log('Marcador eliminado');
+}
+
+function clearMarkersCurrentMap(){
+  if(!currentMap.markers || currentMap.markers.length===0) return;
+  if(!confirm('Eliminar todos los marcadores de este mapa?')) return;
+  currentMap.markers = [];
+  renderMarkersOnCanvas();
+  saveCurrentMapMarkers();
+  log('Marcadores limpiados del mapa actual');
+}
+
+function renderMarkersList(){
+  const wrap = document.getElementById('markers-list'); wrap.innerHTML = '';
+  if(!currentMap.markers || currentMap.markers.length===0){ wrap.innerHTML = '<div class="muted">No hay marcadores en este mapa.</div>'; return; }
+  currentMap.markers.forEach((m, i)=>{
+    const el = document.createElement('div'); el.style.display='flex'; el.style.justifyContent='space-between'; el.style.alignItems='center';
+    el.innerHTML = `<div style="display:flex;gap:8px;align-items:center"><div style="width:18px;height:18px;border-radius:50%;background:var(--marker);border:2px solid var(--marker-border);display:flex;align-items:center;justify-content:center;color:#111;font-weight:700">${i+1}</div><div>${escapeHtml(m.label)}</div></div><div style="display:flex;gap:6px"><button class="btn small" onclick="panToMarker('${m.id}')">Ir</button><button class="btn small" onclick="removeMarkerById('${m.id}'); saveCurrentMapMarkers();">Eliminar</button></div>`;
+    wrap.appendChild(el);
+  });
+}
+
+function panToMarker(id){
+  const m = (currentMap.markers||[]).find(x=>x.id===id); if(!m) return;
+  const el = Array.from(document.querySelectorAll('.marker')).find(n=>n.dataset.id===id);
+  if(el){ el.animate([{ transform:'translate(-50%,-50%) scale(1.0)' },{ transform:'translate(-50%,-50%) scale(1.4)' },{ transform:'translate(-50%,-50%) scale(1.0)' }], { duration:600 }); }
+}
+
+function saveCurrentMapMarkers(){
+  if(!currentMap) return;
+  if(currentMap.id){
+    const maps = loadMaps();
+    const idx = maps.findIndex(x=>x.id===currentMap.id);
+    if(idx !== -1){ maps[idx].markers = currentMap.markers || []; saveMaps(maps); renderMapsList(); }
+  }
+}
+
+/* ---------- Map presets (quick) ---------- */
+const presets = {
+  plano: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600"><rect width="100%" height="100%" fill="%23222"/><text x="50%" y="50%" fill="%23ddd" font-size="36" text-anchor="middle">Plano de ciudad</text></svg>',
+  bosque: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600"><rect width="100%" height="100%" fill="%231b3"/><text x="50%" y="50%" fill="%23000" font-size="36" text-anchor="middle">Bosque</text></svg>',
+  dungeon: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600"><rect width="100%" height="100%" fill="%23111"/><text x="50%" y="50%" fill="%23fff" font-size="36" text-anchor="middle">Mazmorra</text></svg>'
+};
+function seleccionarMapaPreset(key){ if(!key){ currentMap.src=null; currentMap.preset=null; actualizarMapPreview(); return; } currentMap.src = presets[key]; currentMap.preset = key; currentMap.id = null; currentMap.name = key; currentMap.markers = []; actualizarMapPreview(); setProjectedMap(currentMap); log('Mapa preset seleccionado: ' + key); }
+function actualizarMapPreview(){ const img = document.getElementById('map-preview'); if(currentMap.src){ img.src = currentMap.src; img.style.display='block'; } else { img.src=''; img.style.display='none'; } }
+function mostrarMapa(){ log('Mostrar mapa (placeholder)'); }
+
+/* ---------- Dice (animated) ---------- */
+const diceModal = document.getElementById('dice-modal');
+const dice3d = document.getElementById('dice-3d');
+const diceResult = document.getElementById('dice-result');
+const btnAgain = document.getElementById('dice-roll-again');
+const btnStop = document.getElementById('dice-stop');
+const btnClose = document.getElementById('dice-close');
+
+let spinTimer = null;
+let finalTimer = null;
+let isSpinning = false;
+
+function randomD20(){ return Math.floor(Math.random()*20) + 1; }
+
+function assignFaces(number){
+  const faces = {
+    front: number,
+    back: ((number + 7) % 20) || 20,
+    right: ((number + 12) % 20) || 20,
+    left: ((number + 3) % 20) || 20,
+    top: ((number + 15) % 20) || 20,
+    bottom: ((number + 5) % 20) || 20
+  };
+  document.getElementById('face-front').innerText = faces.front;
+  document.getElementById('face-back').innerText = faces.back;
+  document.getElementById('face-right').innerText = faces.right;
+  document.getElementById('face-left').innerText = faces.left;
+  document.getElementById('face-top').innerText = faces.top;
+  document.getElementById('face-bottom').innerText = faces.bottom;
+}
+
+function startSpin(duration = 1800){
+  if(isSpinning) return;
+  isSpinning = true;
+  dice3d.style.animation = `dice-spin ${duration}ms cubic-bezier(.2,.9,.2,1) forwards`;
+  spinTimer = setInterval(()=>{
+    const temp = randomD20();
+    assignFaces(temp);
+    diceResult.innerText = '...';
+  }, 120);
+}
+
+function stopSpin(finalNumber){
+  if(!isSpinning) return;
+  isSpinning = false;
+  clearInterval(spinTimer);
+  spinTimer = null;
+  assignFaces(finalNumber);
+  dice3d.style.animation = '';
+  dice3d.style.transform = 'rotateX(0deg) rotateY(0deg) rotateZ(0deg)';
+  diceResult.innerText = `Resultado: ${finalNumber}`;
+  log(`Tirada d20: ${finalNumber}`);
+}
+
+function tirarDadoAnimado(){
+  diceModal.style.display = 'flex';
+  diceResult.innerText = 'Tirando...';
+  const duration = 1200 + Math.floor(Math.random()*1400);
+  startSpin(duration);
+  const final = randomD20();
+  finalTimer = setTimeout(()=> {
+    stopSpin(final);
+    finalTimer = null;
+  }, duration + 60);
+}
+
+btnAgain.addEventListener('click', ()=>{
+  if(finalTimer) { clearTimeout(finalTimer); finalTimer = null; }
+  if(spinTimer) { clearInterval(spinTimer); spinTimer = null; }
+  dice3d.style.animation = '';
+  isSpinning = false;
+  tirarDadoAnimado();
+});
+
+btnStop.addEventListener('click', ()=>{
+  if(spinTimer) clearInterval(spinTimer);
+  if(finalTimer) clearTimeout(finalTimer);
+  const final = randomD20();
+  stopSpin(final);
+  finalTimer = null;
+});
+
+btnClose.addEventListener('click', ()=>{
+  if(spinTimer) clearInterval(spinTimer);
+  if(finalTimer) clearTimeout(finalTimer);
+  spinTimer = finalTimer = null;
+  isSpinning = false;
+  dice3d.style.animation = '';
+  diceModal.style.display = 'none';
+});
+
+function tirarDado(){
+  tirarDadoAnimado();
+  return null;
+}
+
+/* ---------- Misc ---------- */
+function limpiarPreview(){ renderPreview(null); log('Preview limpiada'); }
+function reiniciar(){
+  players = defaultPlayers(); savePlayers(); renderPlayers();
+  document.getElementById('monstruos-activos').innerHTML=''; monstruosActivos={}; monstruoSeleccionado=null; monstruoUIDSeleccionado=null;
+  currentMap = { src:null, preset:null, id:null, name:null, markers:[] }; document.getElementById('map-preview').style.display='none'; setProjectedMap(currentMap);
+  document.getElementById('monster-search').value=''; renderMonsterButtons(); renderMapsList();
+  document.getElementById('jugador-seleccionado').innerText='Ninguno'; document.getElementById('log').innerHTML=''; log('Pantalla reiniciada');
+}
+
+/* ---------- Init ---------- */
+(function init(){
+  loadPlayers();
+  renderPlayers();
+  renderMonsterButtons();
+  renderMapsList();
+  const maps = loadMaps();
+  if(maps.length>0){ loadMap(maps[0].id); }
+  log('Interfaz DM lista — todo restaurado y funcionando');
+})();
+
+/* Keep layout stable on resize */
+window.addEventListener('resize', ()=> {
+  document.querySelectorAll('.monster-grid, .players-grid, .monsters-active, .maps-list').forEach(el=>{
+    el.style.display='none'; void el.offsetHeight; el.style.display='';
+  });
+});
+</script>
+</body>
+</html>

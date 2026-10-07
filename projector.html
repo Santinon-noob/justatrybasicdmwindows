@@ -1,0 +1,301 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Proyección DM</title>
+<style>
+  :root{
+    --bg:#000; --panel:rgba(0,0,0,0.6); --muted:#cfcfcf; --accent:#ffd166;
+    --marker:#ffd166; --marker-border:#b07a00;
+  }
+  html,body{height:100%;margin:0;background:var(--bg);color:#fff;font-family:Inter,Segoe UI,Arial,sans-serif}
+  .stage{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:12px}
+  .toolbar{position:absolute;left:12px;top:12px;display:flex;gap:8px;z-index:60}
+  .btn{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.06);color:#fff;padding:8px 10px;border-radius:6px;cursor:pointer}
+  .status{position:absolute;right:12px;top:12px;padding:6px 10px;border-radius:6px;background:var(--panel);font-size:13px;color:var(--muted)}
+  .canvas-wrap{width:100%;height:100%;display:flex;align-items:center;justify-content:center;overflow:hidden}
+  .map{position:relative;width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:#111}
+  .map img{max-width:100%;max-height:100%;object-fit:contain;display:block}
+  .marker{position:absolute;width:20px;height:20px;border-radius:50%;background:var(--marker);border:2px solid var(--marker-border);transform:translate(-50%,-50%);display:flex;align-items:center;justify-content:center;color:#111;font-weight:700;cursor:pointer;z-index:40}
+  .label{position:absolute;transform:translate(-50%,-140%);background:rgba(0,0,0,0.7);padding:4px 8px;border-radius:6px;font-size:13px;white-space:nowrap;color:#fff;z-index:41;pointer-events:none}
+  .hint{position:absolute;left:12px;bottom:12px;background:var(--panel);padding:8px;border-radius:6px;color:var(--muted);font-size:13px}
+  .fullscreen{position:absolute;right:12px;bottom:12px;background:var(--panel);padding:8px;border-radius:6px;color:var(--muted);cursor:pointer}
+</style>
+</head>
+<body>
+  <div class="stage" id="stage">
+    <div class="toolbar">
+      <button class="btn" id="btn-sync">Sincronizar</button>
+      <button class="btn" id="btn-add">Añadir marcador</button>
+      <button class="btn" id="btn-edit-mode">Editar marcador</button>
+      <button class="btn" id="btn-remove-mode">Quitar marcador</button>
+    </div>
+
+    <div class="status" id="status">Estado: esperando handshake</div>
+
+    <div class="canvas-wrap">
+      <div class="map" id="map">
+        <img id="map-img" alt="Mapa proyectado" src="">
+      </div>
+    </div>
+
+    <div class="hint">Haz clic en el mapa para añadir marcador (modo añadir activado)</div>
+    <div class="fullscreen" id="btn-full">Pantalla completa</div>
+  </div>
+
+<script>
+/* ====== Estado local ====== */
+let state = { players: {}, monsters: {}, currentMap: { id:null, name:null, dataUrl:null, markers:[] }, timestamp: null };
+let connected = false;
+let openerWindow = window.opener || null;
+let addMode = true;
+let editMode = false;
+let removeMode = false;
+const statusEl = document.getElementById('status');
+const mapEl = document.getElementById('map');
+const mapImg = document.getElementById('map-img');
+const btnSync = document.getElementById('btn-sync');
+const btnAdd = document.getElementById('btn-add');
+const btnEdit = document.getElementById('btn-edit-mode');
+const btnRemove = document.getElementById('btn-remove-mode');
+const btnFull = document.getElementById('btn-full');
+
+/* ====== Utilidades ====== */
+function nowISO(){ return new Date().toISOString(); }
+function clamp01(v){ return Math.max(0, Math.min(1, v)); }
+function postToOpener(msg){ try{ if(window.opener && !window.opener.closed) window.opener.postMessage(msg, '*'); }catch(e){ console.warn('postToOpener failed', e); } }
+function setStatus(s){ statusEl.innerText = 'Estado: ' + s; }
+
+/* ====== Handshake y mensajes entrantes ====== */
+window.addEventListener('message', (ev)=>{
+  const m = ev.data || {};
+  if(!m.type) return;
+  switch(m.type){
+    case 'handshake':
+      // DM envía estado inicial
+      if(m.payload && m.payload.state){
+        state = m.payload.state;
+        state.timestamp = m.timestamp || nowISO();
+        renderMap();
+        renderMarkers();
+        setStatus('conectado (handshake recibido)');
+        connected = true;
+        // responder ack
+        postToOpener({ type:'handshake_ack', source:'projection', ready:true, timestamp: nowISO() });
+      }
+      break;
+    case 'state_sync':
+      if(m.payload && m.payload.state){
+        state = m.payload.state;
+        state.timestamp = m.timestamp || nowISO();
+        renderMap();
+        renderMarkers();
+        setStatus('estado sincronizado');
+        postToOpener({ type:'ack', source:'projection', payload:{ ref:'state_sync' }, timestamp: nowISO() });
+      }
+      break;
+    case 'marker_added':
+      if(m.payload && m.payload.marker){
+        upsertMarker(m.payload.marker);
+        renderMarkers();
+        setStatus('marcador añadido desde DM');
+        postToOpener({ type:'ack', source:'projection', payload:{ ref: 'marker_added:'+m.payload.marker.id }, timestamp: nowISO() });
+      }
+      break;
+    case 'marker_updated':
+      if(m.payload && m.payload.marker){
+        upsertMarker(m.payload.marker);
+        renderMarkers();
+        setStatus('marcador actualizado desde DM');
+        postToOpener({ type:'ack', source:'projection', payload:{ ref: 'marker_updated:'+m.payload.marker.id }, timestamp: nowISO() });
+      }
+      break;
+    case 'marker_removed':
+      if(m.payload && m.payload.id){
+        removeMarkerById(m.payload.id);
+        renderMarkers();
+        setStatus('marcador eliminado desde DM');
+        postToOpener({ type:'ack', source:'projection', payload:{ ref: 'marker_removed:'+m.payload.id }, timestamp: nowISO() });
+      }
+      break;
+    case 'map_changed':
+      if(m.payload && m.payload.map){
+        state.currentMap = m.payload.map;
+        renderMap();
+        renderMarkers();
+        setStatus('mapa cambiado desde DM');
+        postToOpener({ type:'ack', source:'projection', payload:{ ref: 'map_changed:'+m.payload.map.id }, timestamp: nowISO() });
+      }
+      break;
+    default:
+      // ignorar otros tipos
+      break;
+  }
+});
+
+/* ====== Render mapa y marcadores ====== */
+function renderMap(){
+  clearMarkersDOM();
+  if(!state.currentMap || !state.currentMap.dataUrl){
+    mapImg.src = '';
+    setStatus('sin mapa proyectado');
+    return;
+  }
+  mapImg.src = state.currentMap.dataUrl;
+  setStatus('mapa cargado: ' + (state.currentMap.name || 'sin nombre'));
+  // esperar a que la imagen cargue para posicionar marcadores
+  mapImg.onload = ()=> renderMarkers();
+}
+
+function clearMarkersDOM(){
+  Array.from(mapEl.querySelectorAll('.marker')).forEach(n=>n.remove());
+  Array.from(mapEl.querySelectorAll('.label')).forEach(n=>n.remove());
+}
+
+function renderMarkers(){
+  clearMarkersDOM();
+  if(!state.currentMap || !Array.isArray(state.currentMap.markers)) return;
+  state.currentMap.markers.forEach((m, idx)=>{
+    const el = document.createElement('div');
+    el.className = 'marker';
+    el.style.left = (m.x * 100) + '%';
+    el.style.top = (m.y * 100) + '%';
+    el.dataset.id = m.id;
+    el.innerText = (idx+1);
+    el.title = m.label || '';
+    el.addEventListener('click', (ev)=>{
+      ev.stopPropagation();
+      onMarkerClick(m);
+    });
+    const lbl = document.createElement('div');
+    lbl.className = 'label';
+    lbl.style.left = (m.x * 100) + '%';
+    lbl.style.top = (m.y * 100) + '%';
+    lbl.innerText = m.label || '';
+    mapEl.appendChild(el);
+    mapEl.appendChild(lbl);
+  });
+}
+
+/* ====== Marcadores: CRUD local y envío ====== */
+function upsertMarker(marker){
+  marker.x = clamp01(marker.x);
+  marker.y = clamp01(marker.y);
+  state.currentMap.markers = state.currentMap.markers || [];
+  const idx = state.currentMap.markers.findIndex(x=>x.id === marker.id);
+  if(idx === -1) state.currentMap.markers.push(marker);
+  else state.currentMap.markers[idx] = marker;
+}
+
+function removeMarkerById(id){
+  state.currentMap.markers = (state.currentMap.markers || []).filter(m=>m.id !== id);
+}
+
+/* ====== Interacciones usuario ====== */
+mapEl.addEventListener('click', (ev)=>{
+  // calcular coords relativas
+  if(!state.currentMap || !state.currentMap.dataUrl) return;
+  const rect = mapEl.getBoundingClientRect();
+  const x = (ev.clientX - rect.left) / rect.width;
+  const y = (ev.clientY - rect.top) / rect.height;
+  if(removeMode){
+    const nearest = findNearestMarker(x,y,0.03);
+    if(nearest){ if(confirm('Eliminar marcador "'+nearest.label+'" ?')){ removeMarkerById(nearest.id); renderMarkers(); postMarkerRemoved(nearest.id); } }
+    return;
+  }
+  if(!addMode){ setStatus('Activa modo añadir para colocar marcadores'); return; }
+  const label = prompt('Nombre del punto de interés (dejar vacío para "Punto")') || 'Punto';
+  const id = 'm-' + Date.now();
+  const marker = { id, x: clamp01(x), y: clamp01(y), label };
+  upsertMarker(marker);
+  renderMarkers();
+  postMarkerAdded(marker);
+});
+
+/* click sobre marcador */
+function onMarkerClick(m){
+  if(removeMode){
+    if(confirm('Eliminar marcador "'+m.label+'" ?')){ removeMarkerById(m.id); renderMarkers(); postMarkerRemoved(m.id); }
+    return;
+  }
+  if(editMode){
+    const newLabel = prompt('Editar etiqueta del marcador', m.label);
+    if(newLabel !== null){
+      m.label = newLabel || m.label;
+      upsertMarker(m);
+      renderMarkers();
+      postMarkerUpdated(m);
+    }
+    return;
+  }
+  // default: mostrar info breve
+  setStatus('Marcador: ' + (m.label || '(sin etiqueta)'));
+}
+
+/* buscar marcador cercano */
+function findNearestMarker(x,y,threshold){
+  if(!state.currentMap.markers) return null;
+  let best=null, bestD=Infinity;
+  state.currentMap.markers.forEach(m=>{
+    const dx = m.x - x, dy = m.y - y, d = Math.sqrt(dx*dx + dy*dy);
+    if(d < bestD){ bestD = d; best = m; }
+  });
+  return bestD <= threshold ? best : null;
+}
+
+/* ====== Envío de eventos al DM ====== */
+function postMarkerAdded(marker){
+  const msg = { type:'marker_added', source:'projection', payload:{ marker }, timestamp: nowISO() };
+  postToOpener(msg);
+  setStatus('marcador añadido y notificado al DM');
+}
+function postMarkerUpdated(marker){
+  const msg = { type:'marker_updated', source:'projection', payload:{ marker }, timestamp: nowISO() };
+  postToOpener(msg);
+  setStatus('marcador actualizado y notificado al DM');
+}
+function postMarkerRemoved(id){
+  const msg = { type:'marker_removed', source:'projection', payload:{ id }, timestamp: nowISO() };
+  postToOpener(msg);
+  setStatus('marcador eliminado y notificado al DM');
+}
+
+/* ====== Botones y modos ====== */
+btnSync.addEventListener('click', ()=> {
+  // pedir estado al DM (si implementa request_state)
+  postToOpener({ type:'request_state', source:'projection', timestamp: nowISO() });
+  setStatus('solicitando estado al DM');
+});
+btnAdd.addEventListener('click', ()=> { addMode = true; editMode = false; removeMode = false; setStatus('modo añadir'); });
+btnEdit.addEventListener('click', ()=> { editMode = !editMode; addMode = !editMode; removeMode = false; setStatus(editMode ? 'modo editar' : 'modo añadir'); });
+btnRemove.addEventListener('click', ()=> { removeMode = !removeMode; addMode = !removeMode; editMode = false; setStatus(removeMode ? 'modo quitar' : 'modo añadir'); });
+btnFull.addEventListener('click', ()=> {
+  if(!document.fullscreenElement) document.documentElement.requestFullscreen().catch(()=>{});
+  else document.exitFullscreen().catch(()=>{});
+});
+
+/* ====== Reintento handshake si opener no responde ====== */
+let handshakeAttempts = 0;
+function tryHandshakeRetry(){
+  if(handshakeAttempts >= 6) return;
+  handshakeAttempts++;
+  setStatus('esperando handshake del DM (intento '+handshakeAttempts+')');
+  // enviar un ping para que el DM responda con state si está escuchando
+  postToOpener({ type:'projection_ready', source:'projection', timestamp: nowISO() });
+  setTimeout(tryHandshakeRetry, 1200 * handshakeAttempts);
+}
+setTimeout(tryHandshakeRetry, 800);
+
+/* ====== Inicialización visual ====== */
+renderMap();
+renderMarkers();
+setStatus('listo para handshake');
+
+/* ====== Seguridad: cerrar si no hay opener en 30s (opcional) ====== */
+setTimeout(()=> {
+  if(!window.opener || window.opener.closed) setStatus('sin DM detectado');
+}, 30000);
+</script>
+</body>
+</html>
