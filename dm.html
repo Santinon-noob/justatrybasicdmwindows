@@ -1,102 +1,102 @@
 <!doctype html>
 <html lang="es">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>DM Toolkit — Jugadores, Monstruos, Mapas y D20</title>
-<style>
-  :root{
-    --bg:#151515; --panel:#1f1f1f; --muted:#bdbdbd; --accent:#2f2f2f;
-    --danger:#b23a3a; --pill:#2b2b2b; --glass:rgba(255,255,255,0.02);
-    --marker:#ffd166; --marker-border:#b07a00;
-  }
-  *{box-sizing:border-box}
-  body{margin:0;font-family:Inter,Segoe UI,Arial,sans-serif;background:var(--bg);color:#eee;min-height:100vh}
-  .wrap{display:grid;grid-template-columns:320px 1fr 420px;gap:12px;padding:12px;height:100vh}
-  @media(max-width:1100px){.wrap{grid-template-columns:1fr;grid-auto-rows:min-content;height:auto;padding:8px}.left-col{order:1}.center-col{order:2}.right-col{order:3}}
-  .panel{background:var(--panel);border-radius:8px;padding:12px;box-shadow:0 2px 8px rgba(0,0,0,0.6);display:flex;flex-direction:column;gap:8px;min-height:120px;overflow:auto}
-  h3{margin:0 0 6px 0;color:var(--muted);font-weight:600;font-size:0.95rem}
-  .row{display:flex;gap:8px;align-items:center}
-  .muted{color:var(--muted);font-size:0.9rem}
-  .btn{background:var(--accent);border:0;color:#fff;padding:8px 10px;border-radius:6px;cursor:pointer}
-  .btn.small{padding:6px 8px;font-size:0.9rem}
-  input[type="text"], input[type="number"], select, textarea{background:transparent;border:1px solid rgba(255,255,255,0.04);color:#fff;padding:8px;border-radius:6px}
-  .input-num{width:80px;padding:6px;border-radius:6px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:#fff}
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>DM Toolkit — Jugadores, Monstruos, Mapas y D20</title>
+  <style>
+    :root{
+      --bg:#151515; --panel:#1f1f1f; --muted:#bdbdbd; --accent:#2f2f2f;
+      --danger:#b23a3a; --pill:#2b2b2b; --glass:rgba(255,255,255,0.02);
+      --marker:#ffd166; --marker-border:#b07a00;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Inter,Segoe UI,Arial,sans-serif;background:var(--bg);color:#eee;min-height:100vh}
+    .wrap{display:grid;grid-template-columns:320px 1fr 420px;gap:12px;padding:12px;height:100vh}
+    @media(max-width:1100px){.wrap{grid-template-columns:1fr;grid-auto-rows:min-content;height:auto;padding:8px}.left-col{order:1}.center-col{order:2}.right-col{order:3}}
+    .panel{background:var(--panel);border-radius:8px;padding:12px;box-shadow:0 2px 8px rgba(0,0,0,0.6);display:flex;flex-direction:column;gap:8px;min-height:120px;overflow:auto}
+    h3{margin:0 0 6px 0;color:var(--muted);font-weight:600;font-size:0.95rem}
+    .row{display:flex;gap:8px;align-items:center}
+    .muted{color:var(--muted);font-size:0.9rem}
+    .btn{background:var(--accent);border:0;color:#fff;padding:8px 10px;border-radius:6px;cursor:pointer}
+    .btn.small{padding:6px 8px;font-size:0.9rem}
+    input[type="text"], input[type="number"], select, textarea{background:transparent;border:1px solid rgba(255,255,255,0.04);color:#fff;padding:8px;border-radius:6px}
+    .input-num{width:80px;padding:6px;border-radius:6px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:#fff}
 
-  /* Monsters */
-  .monster-top{display:flex;gap:8px;align-items:center}
-  .monster-search{flex:1;padding:8px;border-radius:6px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:#fff}
-  .monster-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;max-height:36vh;overflow:auto;padding:6px}
-  .monster-btn{background:var(--accent);border:0;color:#eee;padding:8px;border-radius:6px;cursor:pointer;display:flex;align-items:center;gap:8px;justify-content:flex-start}
-  .monster-btn img{width:40px;height:40px;object-fit:cover;border-radius:6px}
-  .monster-empty{color:var(--muted);padding:12px;text-align:center}
-  .monsters-active{display:flex;flex-direction:column;gap:8px;max-height:36vh;overflow:auto;padding-right:6px}
-  .monster-card{background:#222;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.03);display:flex;flex-direction:column;gap:8px}
-  .monster-card img{width:40px;height:40px;object-fit:cover;border-radius:6px}
-  .monster-states{display:flex;gap:6px;flex-wrap:wrap}
-  .state-pill{background:var(--pill);padding:6px 8px;border-radius:999px;color:var(--muted);font-size:0.85rem;cursor:pointer}
-  .state-pill.active{background:#3a3a3a;color:#fff}
+    /* Monsters */
+    .monster-top{display:flex;gap:8px;align-items:center}
+    .monster-search{flex:1;padding:8px;border-radius:6px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:#fff}
+    .monster-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;max-height:36vh;overflow:auto;padding:6px}
+    .monster-btn{background:var(--accent);border:0;color:#eee;padding:8px;border-radius:6px;cursor:pointer;display:flex;align-items:center;gap:8px;justify-content:flex-start}
+    .monster-btn img{width:40px;height:40px;object-fit:cover;border-radius:6px}
+    .monster-empty{color:var(--muted);padding:12px;text-align:center}
+    .monsters-active{display:flex;flex-direction:column;gap:8px;max-height:36vh;overflow:auto;padding-right:6px}
+    .monster-card{background:#222;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.03);display:flex;flex-direction:column;gap:8px}
+    .monster-card img{width:40px;height:40px;object-fit:cover;border-radius:6px}
+    .monster-states{display:flex;gap:6px;flex-wrap:wrap}
+    .state-pill{background:var(--pill);padding:6px 8px;border-radius:999px;color:var(--muted);font-size:0.85rem;cursor:pointer}
+    .state-pill.active{background:#3a3a3a;color:#fff}
 
-  /* Players */
-  .players-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px}
-  .player-card{background:#222;padding:10px;border-radius:8px;display:flex;flex-direction:column;gap:8px;border:1px solid rgba(255,255,255,0.03)}
-  .player-top{display:flex;align-items:center;gap:10px}
-  .hp{flex:1;height:14px;background:#111;border-radius:8px;overflow:hidden;border:1px solid rgba(255,255,255,0.03)}
-  .hp .fill{height:100%;background:linear-gradient(90deg,var(--danger),#ff6b6b);width:100%}
-  .controls-row{display:flex;gap:6px;flex-wrap:wrap}
+    /* Players */
+    .players-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px}
+    .player-card{background:#222;padding:10px;border-radius:8px;display:flex;flex-direction:column;gap:8px;border:1px solid rgba(255,255,255,0.03)}
+    .player-top{display:flex;align-items:center;gap:10px}
+    .hp{flex:1;height:14px;background:#111;border-radius:8px;overflow:hidden;border:1px solid rgba(255,255,255,0.03)}
+    .hp .fill{height:100%;background:linear-gradient(90deg,var(--danger),#ff6b6b);width:100%}
+    .controls-row{display:flex;gap:6px;flex-wrap:wrap}
 
-  /* Preview thumb: force limits and cover */
-  .preview-thumb {
-    display: none;
-    width: 96px;
-    height: 96px;
-    max-width: 100%;
-    max-height: 100%;
-    object-fit: cover;
-    border-radius: 8px;
-    border: 1px solid rgba(255,255,255,0.04);
-  }
+    /* Preview thumb: force limits and cover */
+    .preview-thumb {
+      display: none;
+      width: 96px;
+      height: 96px;
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: cover;
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.04);
+    }
 
-  /* Map area under players */
-  .map-area{margin-top:12px;background:#0f0f0f;border-radius:8px;padding:8px;border:1px solid rgba(255,255,255,0.04)}
-  .map-canvas{position:relative;width:100%;height:320px;background:#111;border-radius:6px;overflow:hidden;display:flex;align-items:center;justify-content:center}
-  .map-canvas img{max-width:100%;max-height:100%;object-fit:contain;display:block}
-  .marker{
-    position:absolute;
-    width:18px;height:18px;border-radius:50%;
-    background:var(--marker);border:2px solid var(--marker-border);
-    transform:translate(-50%,-50%);cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,0.5);
-    display:flex;align-items:center;justify-content:center;font-size:11px;color:#111;font-weight:700;
-  }
-  .marker-label{position:absolute;white-space:nowrap;background:rgba(0,0,0,0.7);padding:4px 8px;border-radius:6px;font-size:12px;color:#fff;transform:translate(-50%, -140%);display:none}
-  .marker:hover + .marker-label{display:block}
+    /* Map area under players */
+    .map-area{margin-top:12px;background:#0f0f0f;border-radius:8px;padding:8px;border:1px solid rgba(255,255,255,0.04)}
+    .map-canvas{position:relative;width:100%;height:320px;background:#111;border-radius:6px;overflow:hidden;display:flex;align-items:center;justify-content:center}
+    .map-canvas img{max-width:100%;max-height:100%;object-fit:contain;display:block}
+    .marker{
+      position:absolute;
+      width:18px;height:18px;border-radius:50%;
+      background:var(--marker);border:2px solid var(--marker-border);
+      transform:translate(-50%,-50%);cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,0.5);
+      display:flex;align-items:center;justify-content:center;font-size:11px;color:#111;font-weight:700;
+    }
+    .marker-label{position:absolute;white-space:nowrap;background:rgba(0,0,0,0.7);padding:4px 8px;border-radius:6px;font-size:12px;color:#fff;transform:translate(-50%, -140%);display:none}
+    .marker:hover + .marker-label{display:block}
 
-  /* Maps list */
-  .maps-list{display:flex;flex-direction:column;gap:8px;max-height:22vh;overflow:auto;padding-right:6px}
-  .map-item{display:flex;gap:8px;align-items:center;background:#1a1a1a;padding:6px;border-radius:6px}
-  .map-thumb{width:56px;height:40px;object-fit:cover;border-radius:4px;border:1px solid rgba(255,255,255,0.04)}
-  .log{background:#0f0f0f;border-radius:8px;padding:8px;height:22vh;overflow:auto;color:var(--muted);font-size:0.9rem}
+    /* Maps list */
+    .maps-list{display:flex;flex-direction:column;gap:8px;max-height:22vh;overflow:auto;padding-right:6px}
+    .map-item{display:flex;gap:8px;align-items:center;background:#1a1a1a;padding:6px;border-radius:6px}
+    .map-thumb{width:56px;height:40px;object-fit:cover;border-radius:4px;border:1px solid rgba(255,255,255,0.04)}
+    .log{background:#0f0f0f;border-radius:8px;padding:8px;height:22vh;overflow:auto;color:var(--muted);font-size:0.9rem}
 
-  /* Dice modal */
-  #dice-modal { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; background: rgba(0,0,0,0.55); z-index: 9999; }
-  .dice-card { width: 220px; height: 220px; perspective: 900px; display:flex; align-items:center; justify-content:center; }
-  .dice-3d { width: 140px; height: 140px; transform-style: preserve-3d; transition: transform 600ms cubic-bezier(.2,.9,.2,1); position: relative; }
-  .dice-face { position: absolute; inset: 0; display:flex; align-items:center; justify-content:center; border-radius:12px; background: linear-gradient(180deg,#fff,#e6e6e6); color:#111; font-weight:700; font-size:48px; box-shadow: 0 6px 18px rgba(0,0,0,0.45), inset 0 -6px 12px rgba(0,0,0,0.06); backface-visibility: hidden; }
-  .face-front  { transform: translateZ(70px); }
-  .face-back   { transform: rotateY(180deg) translateZ(70px); }
-  .face-right  { transform: rotateY(90deg) translateZ(70px); }
-  .face-left   { transform: rotateY(-90deg) translateZ(70px); }
-  .face-top    { transform: rotateX(90deg) translateZ(70px); }
-  .face-bottom { transform: rotateX(-90deg) translateZ(70px); }
-  @keyframes dice-spin { from { transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg); } to { transform: rotateX(1080deg) rotateY(720deg) rotateZ(360deg); } }
-  .dice-result { margin-top:12px; text-align:center; color:#fff; font-weight:700; font-size:20px; }
-  .dice-controls { display:flex; gap:8px; justify-content:center; margin-top:10px; }
-  .dice-controls button { padding:8px 12px; border-radius:8px; border:0; cursor:pointer; background:#333; color:#fff; }
-  .dice-controls button:hover { background:#444; }
+    /* Dice modal */
+    #dice-modal { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; background: rgba(0,0,0,0.55); z-index: 9999; }
+    .dice-card { width: 220px; height: 220px; perspective: 900px; display:flex; align-items:center; justify-content:center; }
+    .dice-3d { width: 140px; height: 140px; transform-style: preserve-3d; transition: transform 600ms cubic-bezier(.2,.9,.2,1); position: relative; }
+    .dice-face { position: absolute; inset: 0; display:flex; align-items:center; justify-content:center; border-radius:12px; background: linear-gradient(180deg,#fff,#e6e6e6); color:#111; font-weight:700; font-size:32px; box-shadow:0 16px 30px rgba(0,0,0,0.25); }
+    .face-front  { transform: translateZ(70px); }
+    .face-back   { transform: rotateY(180deg) translateZ(70px); }
+    .face-right  { transform: rotateY(90deg) translateZ(70px); }
+    .face-left   { transform: rotateY(-90deg) translateZ(70px); }
+    .face-top    { transform: rotateX(90deg) translateZ(70px); }
+    .face-bottom { transform: rotateX(-90deg) translateZ(70px); }
+    @keyframes dice-spin { from { transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg); } to { transform: rotateX(1080deg) rotateY(720deg) rotateZ(360deg); } }
+    .dice-result { margin-top:12px; text-align:center; color:#fff; font-weight:700; font-size:20px; }
+    .dice-controls { display:flex; gap:8px; justify-content:center; margin-top:10px; }
+    .dice-controls button { padding:8px 12px; border-radius:8px; border:0; cursor:pointer; background:#333; color:#fff; }
+    .dice-controls button:hover { background:#444; }
 
-  .selected{outline:2px solid rgba(63,198,63,0.18);box-shadow:0 0 12px rgba(63,198,63,0.06)}
-  .small-muted{font-size:0.85rem;color:var(--muted)}
-</style>
+    .selected{outline:2px solid rgba(63,198,63,0.18);box-shadow:0 0 12px rgba(63,198,63,0.06)}
+    .small-muted{font-size:0.85rem;color:var(--muted)}
+  </style>
 </head>
 <body>
   <div class="wrap">
@@ -241,6 +241,99 @@ function log(msg){ const el=document.getElementById('log'); const t=new Date().t
 const LS_PLAYERS = 'dm_players_v1';
 const LS_MAPS = 'dm_maps_v1';
 
+/* ---------- Projection sync ---------- */
+let projectorWindow = null;
+function buildProjectorState(){
+  return {
+    players: players || {},
+    monsters: monstruosActivos || {},
+    currentMap: {
+      id: currentMap && currentMap.id ? currentMap.id : null,
+      name: currentMap && currentMap.name ? currentMap.name : 'Sin nombre',
+      dataUrl: currentMap && currentMap.src ? currentMap.src : '',
+      markers: Array.isArray(currentMap && currentMap.markers) ? currentMap.markers.map(m => ({ ...m })) : []
+    },
+    timestamp: new Date().toISOString()
+  };
+}
+
+function sendToProjector(msg){
+  const payload = Object.assign({ source: 'dm', timestamp: new Date().toISOString() }, msg || {});
+  if(projectorWindow && !projectorWindow.closed){
+    projectorWindow.postMessage(payload, '*');
+    return true;
+  }
+  if(window.opener && !window.opener.closed){
+    window.opener.postMessage(payload, '*');
+    return true;
+  }
+  return false;
+}
+
+function syncProjectorState(){
+  if(!projectorWindow || projectorWindow.closed){
+    return;
+  }
+  sendToProjector({ type: 'state_sync', payload: { state: buildProjectorState() } });
+}
+
+function openProjectorWindow(){
+  if(projectorWindow && !projectorWindow.closed){
+    projectorWindow.focus();
+    syncProjectorState();
+    return projectorWindow;
+  }
+
+  projectorWindow = window.open('projector.html', 'dm_projection_window', 'width=1200,height=820,resizable=yes,scrollbars=yes');
+  if(!projectorWindow){
+    alert('El navegador bloqueó la ventana del proyector. Permite las ventanas emergentes para continuar.');
+    return null;
+  }
+
+  setTimeout(()=>{
+    sendToProjector({ type: 'handshake', payload: { state: buildProjectorState() } });
+    log('Ventana del proyector abierta y sincronizada.');
+  }, 500);
+  return projectorWindow;
+}
+
+window.addEventListener('message', function(ev){
+  const msg = ev.data || {};
+  if(!msg || !msg.type || msg.source !== 'projection') return;
+
+  if(msg.type === 'projection_ready' || msg.type === 'request_state'){
+    sendToProjector({ type: 'handshake', payload: { state: buildProjectorState() } });
+    return;
+  }
+
+  if(msg.type === 'marker_added' || msg.type === 'marker_updated' || msg.type === 'marker_removed'){
+    if(msg.payload && msg.payload.marker){
+      const incoming = msg.payload.marker;
+      currentMap.markers = currentMap.markers || [];
+      const idx = currentMap.markers.findIndex(m => m.id === incoming.id);
+      if(idx === -1){ currentMap.markers.push(incoming); }
+      else { currentMap.markers[idx] = incoming; }
+      renderMarkersOnCanvas();
+      saveCurrentMapMarkers();
+      log('Marcador sincronizado desde la proyección');
+    }
+    if(msg.payload && msg.payload.id){
+      currentMap.markers = (currentMap.markers || []).filter(m => m.id !== msg.payload.id);
+      renderMarkersOnCanvas();
+      saveCurrentMapMarkers();
+      log('Marcador eliminado desde la proyección');
+    }
+  }
+
+  if(msg.type === 'handshake_ack'){
+    log('La ventana de proyección respondió correctamente.');
+  }
+
+  if(msg.type === 'ack'){
+    log('Confirmación recibida del proyector.');
+  }
+});
+
 /* ---------- Players: dynamic add/remove and persistence ---------- */
 let players = {};
 function defaultPlayers(){
@@ -315,14 +408,14 @@ function renderPlayers(){
 /* Player HP & states */
 let jugadorSeleccionado = null;
 const playerStateOptions = ['Veneno','Fuego','Congelación','Parálisis'];
-function updatePlayerUI(key){ const p = players[key]; if(!p) return; const fill = document.querySelector(`#hp-${key} .fill`); const percent = Math.round((p.hp / p.maxHp) * 100); if(fill) fill.style.width = percent + '%'; const label = document.getElementById('label-' + key); const maxlabel = document.getElementById('max-' + key); if(label) label.innerText = p.hp; if(maxlabel) maxlabel.innerText = p.maxHp; renderPlayerStates(key); savePlayers(); }
-function changeHP(key, delta){ const p = players[key]; if(!p) return; p.hp = Math.max(0, Math.min(p.maxHp, p.hp + delta)); updatePlayerUI(key); log(`${p.name} HP modificado: ${delta} (ahora ${p.hp}/${p.maxHp})`); }
+function updatePlayerUI(key){ const p = players[key]; if(!p) return; const fill = document.querySelector(`#hp-${key} .fill`); const percent = Math.round((p.hp / p.maxHp) * 100); if(fill) fill.style.width = `${Math.max(0, Math.min(100, percent))}%`; const label = document.getElementById(`label-${key}`); if(label) label.innerText = p.hp; }
+function changeHP(key, delta){ const p = players[key]; if(!p) return; p.hp = Math.max(0, Math.min(p.maxHp, p.hp + delta)); updatePlayerUI(key); log(`${p.name} HP modificado: ${delta} (ahora ${p.hp})`); }
 function applyManual(key){ const input = document.getElementById('manual-' + key); if(!input) return; const val = parseInt(input.value); if(Number.isNaN(val)){ alert('Ingresa un número válido'); return; } changeHP(key, val); input.value=''; }
-function setMaxHP(key){ const input = document.getElementById('setmax-' + key); if(!input) return; let val = parseInt(input.value); if(Number.isNaN(val) || val < 1){ alert('Vida máxima inválida'); return; } const p = players[key]; p.maxHp = Math.min(2000, val); if(p.hp > p.maxHp) p.hp = p.maxHp; updatePlayerUI(key); input.value=''; log(`${p.name} vida máxima establecida en ${p.maxHp}`); }
+function setMaxHP(key){ const input = document.getElementById('setmax-' + key); if(!input) return; let val = parseInt(input.value); if(Number.isNaN(val) || val < 1){ alert('Vida máxima inválida'); return; } players[key].maxHp = val; players[key].hp = Math.min(players[key].hp, val); updatePlayerUI(key); savePlayers(); log(`${players[key].name} ahora tiene máximo ${val}`); }
 function restoreToMax(key){ const p = players[key]; if(!p) return; p.hp = p.maxHp; updatePlayerUI(key); log(`${p.name} restaurado a vida máxima (${p.maxHp})`); }
-function seleccionarJugador(key){ jugadorSeleccionado = key; document.getElementById('jugador-seleccionado').innerText = players[key].name; document.querySelectorAll('.player-card').forEach(c=>c.classList.remove('selected')); const card = document.getElementById('player-' + key); if(card) card.classList.add('selected'); log(`Jugador seleccionado: ${players[key].name}`); }
-function togglePlayerState(key, state){ const p = players[key]; if(!p) return; const idx = p.states.indexOf(state); if(idx === -1) p.states.push(state); else p.states.splice(idx,1); renderPlayerStates(key); savePlayers(); log(`${p.name} estados: ${p.states.join(', ') || 'ninguno'}`); }
-function renderPlayerStates(key){ const p = players[key]; if(!p) return; const container = document.getElementById('pstates-' + key); container.innerHTML = ''; playerStateOptions.forEach(s=>{ const span=document.createElement('div'); span.className='state-pill' + (p.states.includes(s)?' active':''); span.innerText=s; span.onclick=()=>togglePlayerState(key,s); container.appendChild(span); }); }
+function seleccionarJugador(key){ jugadorSeleccionado = key; document.getElementById('jugador-seleccionado').innerText = players[key].name; document.querySelectorAll('.player-card').forEach(c=>c.classList.remove('selected')); const card = document.getElementById('player-' + key); if(card) card.classList.add('selected'); }
+function togglePlayerState(key, state){ const p = players[key]; if(!p) return; const idx = p.states.indexOf(state); if(idx === -1) p.states.push(state); else p.states.splice(idx,1); renderPlayerStates(key); savePlayers(); }
+function renderPlayerStates(key){ const p = players[key]; if(!p) return; const container = document.getElementById('pstates-' + key); container.innerHTML = ''; playerStateOptions.forEach(s=>{ const btn = document.createElement('button'); btn.type='button'; btn.className='btn small'; btn.style.opacity = p.states.includes(s) ? '1' : '0.65'; btn.innerText = s; btn.onclick = ()=> togglePlayerState(key, s); container.appendChild(btn); }); }
 
 /* ---------- Monsters (modal + create + invoke) ---------- */
 const defaultList = []; // start empty by design
@@ -350,18 +443,16 @@ function renderMonsterButtons(){
     if(customMonsters[key] && customMonsters[key].imgUrl){
       const img = document.createElement('img'); img.src = customMonsters[key].imgUrl; img.alt = name; btn.appendChild(img);
     }
-    const span = document.createElement('span'); span.innerText = name;
-    btn.appendChild(span);
+    const span = document.createElement('span'); span.innerText = name; btn.appendChild(span);
     defaultContainer.appendChild(btn);
   });
 }
 
-function filterMonsters(){ const q = document.getElementById('monster-search').value.trim().toLowerCase(); const buttons = defaultContainer.querySelectorAll('.monster-btn'); buttons.forEach(b=>{ const txt = b.innerText.toLowerCase(); b.style.display = txt.includes(q) ? 'flex' : 'none'; }); }
+function filterMonsters(){ const q = document.getElementById('monster-search').value.trim().toLowerCase(); const buttons = defaultContainer.querySelectorAll('.monster-btn'); buttons.forEach(b=>{ const label = b.innerText.trim().toLowerCase(); b.style.display = label.includes(q) ? '' : 'none'; }); }
 
-function abrirModalCrearMonstruo(){ document.getElementById('modal-backdrop').style.display='flex'; document.getElementById('nuevo-nombre').value=''; document.getElementById('nuevo-archivo').value=''; document.getElementById('nuevo-hp').value=100; }
+function abrirModalCrearMonstruo(){ document.getElementById('modal-backdrop').style.display='flex'; document.getElementById('nuevo-nombre').value=''; document.getElementById('nuevo-archivo').value=''; document.getElementById('nuevo-hp').value='100'; }
 function cerrarModalCrearMonstruo(){ document.getElementById('modal-backdrop').style.display='none'; }
 
-/* Resize helper: convert image file to dataURL resized to maxSize (px) */
 function resizeImageFileToDataURL(file, maxSize, callback){
   const reader = new FileReader();
   reader.onload = function(ev){
@@ -369,18 +460,13 @@ function resizeImageFileToDataURL(file, maxSize, callback){
     img.onload = function(){
       let w = img.width, h = img.height;
       const ratio = w / h;
-      if(w > h){
-        if(w > maxSize){ w = maxSize; h = Math.round(maxSize / ratio); }
-      } else {
-        if(h > maxSize){ h = maxSize; w = Math.round(maxSize * ratio); }
-      }
+      if(w > h){ if(w > maxSize){ w = maxSize; h = Math.round(maxSize / ratio); } }
+      else { if(h > maxSize){ h = maxSize; w = Math.round(maxSize * ratio); } }
       const canvas = document.createElement('canvas');
-      canvas.width = w;
-      canvas.height = h;
+      canvas.width = w; canvas.height = h;
       const ctx = canvas.getContext('2d');
       ctx.drawImage(img, 0, 0, w, h);
-      const dataUrl = canvas.toDataURL('image/png');
-      callback(null, dataUrl);
+      callback(null, canvas.toDataURL('image/png'));
     };
     img.onerror = function(){ callback(new Error('Error cargando imagen')); };
     img.src = ev.target.result;
@@ -406,19 +492,11 @@ function crearMonstruoDesdeModal(){
   }
 
   if(archivo){
-    // resize to 160px max for thumbnail (adjust if desired)
     resizeImageFileToDataURL(archivo, 160, function(err, dataUrl){
-      if(err){
-        // fallback to object URL if resizing fails
-        const fallback = URL.createObjectURL(archivo);
-        finalizeCreate(fallback);
-      } else {
-        finalizeCreate(dataUrl);
-      }
+      if(err){ const fallback = URL.createObjectURL(archivo); finalizeCreate(fallback); }
+      else { finalizeCreate(dataUrl); }
     });
-  } else {
-    finalizeCreate(null);
-  }
+  } else { finalizeCreate(null); }
 }
 
 function seleccionarMonstruo(name){ monstruoSeleccionado = name; renderPreview(name); log('Monstruo preparado: ' + name); }
@@ -459,11 +537,11 @@ function renderMonstruoActivo(uid){
   renderStatesFor(uid);
 }
 
-function modificarHPMonstruo(uid, delta){ const m = monstruosActivos[uid]; if(!m) return; m.hp = Math.max(0, Math.min(m.maxHp, m.hp + delta)); const label=document.getElementById('mlabel-'+uid); const fill=document.querySelector(`#mhp-${uid} .fill`); const percent=Math.round((m.hp/m.maxHp)*100); if(label) label.innerText = `${m.hp}/${m.maxHp}`; if(fill) fill.style.width = percent + '%'; log(`${m.name} HP modificado: ${delta} (ahora ${m.hp}/${m.maxHp})`); if(m.hp<=0) setTimeout(()=> eliminarMonstruo(uid),250); }
+function modificarHPMonstruo(uid, delta){ const m = monstruosActivos[uid]; if(!m) return; m.hp = Math.max(0, Math.min(m.maxHp, m.hp + delta)); const label=document.getElementById('mlabel-'+uid); if(label) label.innerText = `${m.hp}/${m.maxHp}`; const fill = document.querySelector(`#mhp-${uid} .fill`); if(fill) fill.style.width = `${Math.round((m.hp/m.maxHp)*100)}%`; log(`${m.name} HP modificado: ${delta}`); }
 function eliminarMonstruo(uid){ const m=monstruosActivos[uid]; if(!m) return; const el=document.getElementById('monster-'+uid); if(el) el.remove(); delete monstruosActivos[uid]; log(`Monstruo eliminado: ${m.name}`); }
 
 let monstruoUIDSeleccionado = null;
-function seleccionarMonstruoActivo(uid){ document.querySelectorAll('#monstruos-activos .monster-card').forEach(c=>c.classList.remove('selected')); const card=document.getElementById('monster-'+uid); if(card) card.classList.add('selected'); monstruoUIDSeleccionado = uid; renderStatesFor(uid); log(`Monstruo activo seleccionado: ${monstruosActivos[uid].name}`); }
+function seleccionarMonstruoActivo(uid){ document.querySelectorAll('#monstruos-activos .monster-card').forEach(c=>c.classList.remove('selected')); const card=document.getElementById('monster-'+uid); if(card) card.classList.add('selected'); monstruoUIDSeleccionado = uid; }
 
 /* Monster states per-card */
 const monsterStateOptions = ['Veneno','Fuego','Congelación','Parálisis'];
@@ -554,7 +632,7 @@ function renderMapsList(){
   if(list.length === 0){ wrap.innerHTML = '<div class="muted">No hay mapas guardados.</div>'; return; }
   list.forEach(m=>{
     const el = document.createElement('div'); el.className = 'map-item';
-    el.innerHTML = `<img class="map-thumb" src="${m.dataUrl}" alt="${escapeHtml(m.name)}"><div style="flex:1"><div style="font-weight:600">${escapeHtml(m.name)}</div></div><div style="display:flex;gap:6px"><button class="btn small" onclick="loadMap('${m.id}')">Cargar</button><button class="btn small" onclick="deleteMap('${m.id}')">Eliminar</button></div>`;
+    el.innerHTML = `<img class="map-thumb" src="${m.dataUrl}" alt="${escapeHtml(m.name)}"><div style="flex:1"><div style="font-weight:600">${escapeHtml(m.name)}</div></div><div style="display:flex;gap:6px"><button class="btn small" onclick="loadMap('${m.id}')">Cargar</button><button class="btn small" onclick="deleteMap('${m.id}')">Borrar</button></div>`;
     wrap.appendChild(el);
   });
 }
@@ -582,8 +660,10 @@ let removeMode = false;
 
 function setProjectedMap(mapObj){
   if(!mapObj || !mapObj.src){ canvasImg.src = ''; canvasImg.style.display = 'none'; clearMarkersDOM(); currentMap = { src:null, preset:null, id:null, name:null, markers:[] }; renderMarkersList(); return; }
+  currentMap = mapObj;
   canvasImg.src = mapObj.src; canvasImg.style.display = 'block';
   setTimeout(()=> renderMarkersOnCanvas(), 120);
+  syncProjectorState();
 }
 
 function toggleAddMode(){
@@ -615,6 +695,7 @@ canvas.addEventListener('click', (e)=>{
   currentMap.markers.push(marker);
   renderMarkersOnCanvas();
   saveCurrentMapMarkers();
+  sendToProjector({ type: 'marker_added', payload: { marker } });
   log(`Marcador agregado: ${label}`);
 });
 
@@ -650,7 +731,7 @@ function renderMarkersOnCanvas(){
         return;
       }
       const newLabel = prompt('Editar etiqueta del marcador', m.label);
-      if(newLabel !== null){ m.label = newLabel || m.label; renderMarkersOnCanvas(); saveCurrentMapMarkers(); log(`Marcador renombrado: ${m.label}`); }
+      if(newLabel !== null){ m.label = newLabel || m.label; renderMarkersOnCanvas(); saveCurrentMapMarkers(); sendToProjector({ type: 'marker_updated', payload: { marker: m } }); log(`Marcador renombrado: ${m.label}`); }
     });
     wrap.appendChild(el);
     wrap.appendChild(lbl);
@@ -668,6 +749,7 @@ function removeMarkerById(id){
   if(!currentMap.markers) return;
   currentMap.markers = currentMap.markers.filter(m=>m.id !== id);
   renderMarkersOnCanvas();
+  sendToProjector({ type: 'marker_removed', payload: { id } });
   log('Marcador eliminado');
 }
 
@@ -685,7 +767,7 @@ function renderMarkersList(){
   if(!currentMap.markers || currentMap.markers.length===0){ wrap.innerHTML = '<div class="muted">No hay marcadores en este mapa.</div>'; return; }
   currentMap.markers.forEach((m, i)=>{
     const el = document.createElement('div'); el.style.display='flex'; el.style.justifyContent='space-between'; el.style.alignItems='center';
-    el.innerHTML = `<div style="display:flex;gap:8px;align-items:center"><div style="width:18px;height:18px;border-radius:50%;background:var(--marker);border:2px solid var(--marker-border);display:flex;align-items:center;justify-content:center;color:#111;font-weight:700">${i+1}</div><div>${escapeHtml(m.label)}</div></div><div style="display:flex;gap:6px"><button class="btn small" onclick="panToMarker('${m.id}')">Ir</button><button class="btn small" onclick="removeMarkerById('${m.id}'); saveCurrentMapMarkers();">Eliminar</button></div>`;
+    el.innerHTML = `<div style="display:flex;gap:8px;align-items:center"><div style="width:18px;height:18px;border-radius:50%;background:var(--marker);border:2px solid var(--marker-border);display:inline-block"></div><span>${escapeHtml(m.label || `Punto ${i+1}`)}</span></div><button class="btn small" onclick="panToMarker('${m.id}')">Ir</button>`;
     wrap.appendChild(el);
   });
 }
@@ -703,17 +785,24 @@ function saveCurrentMapMarkers(){
     const idx = maps.findIndex(x=>x.id===currentMap.id);
     if(idx !== -1){ maps[idx].markers = currentMap.markers || []; saveMaps(maps); renderMapsList(); }
   }
+  syncProjectorState();
 }
 
 /* ---------- Map presets (quick) ---------- */
 const presets = {
-  plano: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600"><rect width="100%" height="100%" fill="%23222"/><text x="50%" y="50%" fill="%23ddd" font-size="36" text-anchor="middle">Plano de ciudad</text></svg>',
-  bosque: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600"><rect width="100%" height="100%" fill="%231b3"/><text x="50%" y="50%" fill="%23000" font-size="36" text-anchor="middle">Bosque</text></svg>',
-  dungeon: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600"><rect width="100%" height="100%" fill="%23111"/><text x="50%" y="50%" fill="%23fff" font-size="36" text-anchor="middle">Mazmorra</text></svg>'
+  plano: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600"><rect width="100%" height="100%" fill="%23222"/><text x="50%" y="50%" fill="%23ddd" font-size="48" text-anchor="middle" font-family="Arial">Plano</text></svg>',
+  bosque: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600"><rect width="100%" height="100%" fill="%231b3"/><text x="50%" y="50%" fill="%23000" font-size="48" text-anchor="middle" font-family="Arial">Bosque</text></svg>',
+  dungeon: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600"><rect width="100%" height="100%" fill="%23111"/><text x="50%" y="50%" fill="%23fff" font-size="48" text-anchor="middle" font-family="Arial">Dungeon</text></svg>'
 };
-function seleccionarMapaPreset(key){ if(!key){ currentMap.src=null; currentMap.preset=null; actualizarMapPreview(); return; } currentMap.src = presets[key]; currentMap.preset = key; currentMap.id = null; currentMap.name = key; currentMap.markers = []; actualizarMapPreview(); setProjectedMap(currentMap); log('Mapa preset seleccionado: ' + key); }
+function seleccionarMapaPreset(key){ if(!key){ currentMap.src=null; currentMap.preset=null; actualizarMapPreview(); return; } currentMap.src = presets[key]; currentMap.preset = key; currentMap.id = Date.now().toString(); currentMap.name = key; currentMap.markers = []; setProjectedMap(currentMap); }
 function actualizarMapPreview(){ const img = document.getElementById('map-preview'); if(currentMap.src){ img.src = currentMap.src; img.style.display='block'; } else { img.src=''; img.style.display='none'; } }
-function mostrarMapa(){ log('Mostrar mapa (placeholder)'); }
+function mostrarMapa(){
+  const w = openProjectorWindow();
+  if(w){
+    log('Abriendo la ventana del proyector');
+    setTimeout(()=> sendToProjector({ type: 'handshake', payload: { state: buildProjectorState() } }), 300);
+  }
+}
 
 /* ---------- Dice (animated) ---------- */
 const diceModal = document.getElementById('dice-modal');
