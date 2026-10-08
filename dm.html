@@ -1,106 +1,84 @@
 <!doctype html>
 <html lang="es">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>DM Toolkit — Jugadores, Monstruos, Mapas y D20</title>
-  <style>
-    :root{
-      --bg:#151515; --panel:#1f1f1f; --muted:#bdbdbd; --accent:#2f2f2f;
-      --danger:#b23a3a; --pill:#2b2b2b; --glass:rgba(255,255,255,0.02);
-      --marker:#ffd166; --marker-border:#b07a00;
-    }
-    *{box-sizing:border-box}
-    body{margin:0;font-family:Inter,Segoe UI,Arial,sans-serif;background:var(--bg);color:#eee;min-height:100vh}
-    .wrap{display:grid;grid-template-columns:320px 1fr 420px;gap:12px;padding:12px;height:100vh}
-    @media(max-width:1100px){.wrap{grid-template-columns:1fr;grid-auto-rows:min-content;height:auto;padding:8px}.left-col{order:1}.center-col{order:2}.right-col{order:3}}
-    .panel{background:var(--panel);border-radius:8px;padding:12px;box-shadow:0 2px 8px rgba(0,0,0,0.6);display:flex;flex-direction:column;gap:8px;min-height:120px;overflow:auto}
-    h3{margin:0 0 6px 0;color:var(--muted);font-weight:600;font-size:0.95rem}
-    .row{display:flex;gap:8px;align-items:center}
-    .muted{color:var(--muted);font-size:0.9rem}
-    .btn{background:var(--accent);border:0;color:#fff;padding:8px 10px;border-radius:6px;cursor:pointer}
-    .btn.small{padding:6px 8px;font-size:0.9rem}
-    input[type="text"], input[type="number"], select, textarea{background:transparent;border:1px solid rgba(255,255,255,0.04);color:#fff;padding:8px;border-radius:6px}
-    .input-num{width:80px;padding:6px;border-radius:6px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:#fff}
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>DM Toolkit — Jugadores, Monstruos, Mapas y D20</title>
+<style>
+  :root{
+    --bg:#151515; --panel:#1f1f1f; --muted:#bdbdbd; --accent:#2f2f2f;
+    --danger:#b23a3a; --pill:#2b2b2b; --glass:rgba(255,255,255,0.02);
+    --marker:#ffd166; --marker-border:#b07a00;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:Inter,Segoe UI,Arial,sans-serif;background:var(--bg);color:#eee;min-height:100vh}
+  .wrap{display:grid;grid-template-columns:320px 1fr 420px;gap:12px;padding:12px;height:100vh}
+  @media(max-width:1100px){.wrap{grid-template-columns:1fr;grid-auto-rows:min-content;height:auto;padding:8px}.left-col{order:1}.center-col{order:2}.right-col{order:3}}
+  .panel{background:var(--panel);border-radius:8px;padding:12px;box-shadow:0 2px 8px rgba(0,0,0,0.6);display:flex;flex-direction:column;gap:8px;min-height:120px;overflow:auto}
+  h3{margin:0 0 6px 0;color:var(--muted);font-weight:600;font-size:0.95rem}
+  .row{display:flex;gap:8px;align-items:center}
+  .muted{color:var(--muted);font-size:0.9rem}
+  .btn{background:var(--accent);border:0;color:#fff;padding:8px 10px;border-radius:6px;cursor:pointer}
+  .btn.small{padding:6px 8px;font-size:0.9rem}
+  input[type="text"], input[type="number"], select, textarea{background:transparent;border:1px solid rgba(255,255,255,0.04);color:#fff;padding:8px;border-radius:6px}
+  .input-num{width:80px;padding:6px;border-radius:6px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:#fff}
 
-    /* Monsters */
-    .monster-top{display:flex;gap:8px;align-items:center}
-    .monster-search{flex:1;padding:8px;border-radius:6px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:#fff}
-    .monster-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;max-height:36vh;overflow:auto;padding:6px}
-    .monster-btn{background:var(--accent);border:0;color:#eee;padding:8px;border-radius:6px;cursor:pointer;display:flex;align-items:center;gap:8px;justify-content:flex-start}
-    .monster-btn img{width:40px;height:40px;object-fit:cover;border-radius:6px}
-    .monster-empty{color:var(--muted);padding:12px;text-align:center}
-    .monsters-active{display:flex;flex-direction:column;gap:8px;max-height:36vh;overflow:auto;padding-right:6px}
-    .monster-card{background:#222;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.03);display:flex;flex-direction:column;gap:8px}
-    .monster-card img{width:40px;height:40px;object-fit:cover;border-radius:6px}
-    .monster-states{display:flex;gap:6px;flex-wrap:wrap}
-    .state-pill{background:var(--pill);padding:6px 8px;border-radius:999px;color:var(--muted);font-size:0.85rem;cursor:pointer}
-    .state-pill.active{background:#3a3a3a;color:#fff}
+  .monster-top{display:flex;gap:8px;align-items:center}
+  .monster-search{flex:1;padding:8px;border-radius:6px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:#fff}
+  .monster-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;max-height:36vh;overflow:auto;padding:6px}
+  .monster-btn{background:var(--accent);border:0;color:#eee;padding:8px;border-radius:6px;cursor:pointer;display:flex;align-items:center;gap:8px;justify-content:flex-start}
+  .monster-btn img{width:40px;height:40px;object-fit:cover;border-radius:6px}
+  .monster-empty{color:var(--muted);padding:12px;text-align:center}
+  .monsters-active{display:flex;flex-direction:column;gap:8px;max-height:36vh;overflow:auto;padding-right:6px}
+  .monster-card{background:#222;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.03);display:flex;flex-direction:column;gap:8px}
+  .monster-card img{width:40px;height:40px;object-fit:cover;border-radius:6px}
+  .monster-states{display:flex;gap:6px;flex-wrap:wrap}
+  .state-pill{background:var(--pill);padding:6px 8px;border-radius:999px;color:var(--muted);font-size:0.85rem;cursor:pointer}
+  .state-pill.active{background:#3a3a3a;color:#fff}
 
-    /* Players */
-    .players-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px}
-    .player-card{background:#222;padding:10px;border-radius:8px;display:flex;flex-direction:column;gap:8px;border:1px solid rgba(255,255,255,0.03)}
-    .player-top{display:flex;align-items:center;gap:10px}
-    .hp{flex:1;height:14px;background:#111;border-radius:8px;overflow:hidden;border:1px solid rgba(255,255,255,0.03)}
-    .hp .fill{height:100%;background:linear-gradient(90deg,var(--danger),#ff6b6b);width:100%}
-    .controls-row{display:flex;gap:6px;flex-wrap:wrap}
+  .players-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px}
+  .player-card{background:#222;padding:10px;border-radius:8px;display:flex;flex-direction:column;gap:8px;border:1px solid rgba(255,255,255,0.03)}
+  .player-top{display:flex;align-items:center;gap:10px}
+  .hp{flex:1;height:14px;background:#111;border-radius:8px;overflow:hidden;border:1px solid rgba(255,255,255,0.03)}
+  .hp .fill{height:100%;background:linear-gradient(90deg,var(--danger),#ff6b6b);width:100%}
+  .controls-row{display:flex;gap:6px;flex-wrap:wrap}
 
-    /* Preview thumb: force limits and cover */
-    .preview-thumb {
-      display: none;
-      width: 96px;
-      height: 96px;
-      max-width: 100%;
-      max-height: 100%;
-      object-fit: cover;
-      border-radius: 8px;
-      border: 1px solid rgba(255,255,255,0.04);
-    }
+  .preview-thumb {display:none;width:96px;height:96px;max-width:100%;max-height:100%;object-fit:cover;border-radius:8px;border:1px solid rgba(255,255,255,0.04)}
 
-    /* Map area under players */
-    .map-area{margin-top:12px;background:#0f0f0f;border-radius:8px;padding:8px;border:1px solid rgba(255,255,255,0.04)}
-    .map-canvas{position:relative;width:100%;height:320px;background:#111;border-radius:6px;overflow:hidden;display:flex;align-items:center;justify-content:center}
-    .map-canvas img{max-width:100%;max-height:100%;object-fit:contain;display:block}
-    .marker{
-      position:absolute;
-      width:18px;height:18px;border-radius:50%;
-      background:var(--marker);border:2px solid var(--marker-border);
-      transform:translate(-50%,-50%);cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,0.5);
-      display:flex;align-items:center;justify-content:center;font-size:11px;color:#111;font-weight:700;
-    }
-    .marker-label{position:absolute;white-space:nowrap;background:rgba(0,0,0,0.7);padding:4px 8px;border-radius:6px;font-size:12px;color:#fff;transform:translate(-50%, -140%);display:none}
-    .marker:hover + .marker-label{display:block}
+  .map-area{margin-top:12px;background:#0f0f0f;border-radius:8px;padding:8px;border:1px solid rgba(255,255,255,0.04)}
+  .map-canvas{position:relative;width:100%;height:320px;background:#111;border-radius:6px;overflow:hidden;display:flex;align-items:center;justify-content:center}
+  .map-canvas img{max-width:100%;max-height:100%;object-fit:contain;display:block}
+  .marker{position:absolute;width:18px;height:18px;border-radius:50%;background:var(--marker);border:2px solid var(--marker-border);transform:translate(-50%,-50%);cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;font-size:11px;color:#111;font-weight:700}
+  .marker-label{position:absolute;white-space:nowrap;background:rgba(0,0,0,0.7);padding:4px 8px;border-radius:6px;font-size:12px;color:#fff;transform:translate(-50%, -140%);display:none}
+  .marker:hover + .marker-label{display:block}
 
-    /* Maps list */
-    .maps-list{display:flex;flex-direction:column;gap:8px;max-height:22vh;overflow:auto;padding-right:6px}
-    .map-item{display:flex;gap:8px;align-items:center;background:#1a1a1a;padding:6px;border-radius:6px}
-    .map-thumb{width:56px;height:40px;object-fit:cover;border-radius:4px;border:1px solid rgba(255,255,255,0.04)}
-    .log{background:#0f0f0f;border-radius:8px;padding:8px;height:22vh;overflow:auto;color:var(--muted);font-size:0.9rem}
+  .maps-list{display:flex;flex-direction:column;gap:8px;max-height:22vh;overflow:auto;padding-right:6px}
+  .map-item{display:flex;gap:8px;align-items:center;background:#1a1a1a;padding:6px;border-radius:6px}
+  .map-thumb{width:56px;height:40px;object-fit:cover;border-radius:4px;border:1px solid rgba(255,255,255,0.04)}
+  .log{background:#0f0f0f;border-radius:8px;padding:8px;height:22vh;overflow:auto;color:var(--muted);font-size:0.9rem}
 
-    /* Dice modal */
-    #dice-modal { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; background: rgba(0,0,0,0.55); z-index: 9999; }
-    .dice-card { width: 220px; height: 220px; perspective: 900px; display:flex; align-items:center; justify-content:center; }
-    .dice-3d { width: 140px; height: 140px; transform-style: preserve-3d; transition: transform 600ms cubic-bezier(.2,.9,.2,1); position: relative; }
-    .dice-face { position: absolute; inset: 0; display:flex; align-items:center; justify-content:center; border-radius:12px; background: linear-gradient(180deg,#fff,#e6e6e6); color:#111; font-weight:700; font-size:32px; box-shadow:0 16px 30px rgba(0,0,0,0.25); }
-    .face-front  { transform: translateZ(70px); }
-    .face-back   { transform: rotateY(180deg) translateZ(70px); }
-    .face-right  { transform: rotateY(90deg) translateZ(70px); }
-    .face-left   { transform: rotateY(-90deg) translateZ(70px); }
-    .face-top    { transform: rotateX(90deg) translateZ(70px); }
-    .face-bottom { transform: rotateX(-90deg) translateZ(70px); }
-    @keyframes dice-spin { from { transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg); } to { transform: rotateX(1080deg) rotateY(720deg) rotateZ(360deg); } }
-    .dice-result { margin-top:12px; text-align:center; color:#fff; font-weight:700; font-size:20px; }
-    .dice-controls { display:flex; gap:8px; justify-content:center; margin-top:10px; }
-    .dice-controls button { padding:8px 12px; border-radius:8px; border:0; cursor:pointer; background:#333; color:#fff; }
-    .dice-controls button:hover { background:#444; }
+  #dice-modal { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; background: rgba(0,0,0,0.55); z-index: 9999; }
+  .dice-card { width: 220px; height: 220px; perspective: 900px; display:flex; align-items:center; justify-content:center; }
+  .dice-3d { width: 140px; height: 140px; transform-style: preserve-3d; transition: transform 600ms cubic-bezier(.2,.9,.2,1); position: relative; }
+  .dice-face { position: absolute; inset: 0; display:flex; align-items:center; justify-content:center; border-radius:12px; background: linear-gradient(180deg,#fff,#e6e6e6); color:#111; font-weight:700; }
+  .face-front  { transform: translateZ(70px); }
+  .face-back   { transform: rotateY(180deg) translateZ(70px); }
+  .face-right  { transform: rotateY(90deg) translateZ(70px); }
+  .face-left   { transform: rotateY(-90deg) translateZ(70px); }
+  .face-top    { transform: rotateX(90deg) translateZ(70px); }
+  .face-bottom { transform: rotateX(-90deg) translateZ(70px); }
+  @keyframes dice-spin { from { transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg); } to { transform: rotateX(1080deg) rotateY(720deg) rotateZ(360deg); } }
+  .dice-result { margin-top:12px; text-align:center; color:#fff; font-weight:700; font-size:20px; }
+  .dice-controls { display:flex; gap:8px; justify-content:center; margin-top:10px; }
+  .dice-controls button { padding:8px 12px; border-radius:8px; border:0; cursor:pointer; background:#333; color:#fff; }
+  .dice-controls button:hover { background:#444; }
 
-    .selected{outline:2px solid rgba(63,198,63,0.18);box-shadow:0 0 12px rgba(63,198,63,0.06)}
-    .small-muted{font-size:0.85rem;color:var(--muted)}
-  </style>
+  .selected{outline:2px solid rgba(63,198,63,0.18);box-shadow:0 0 12px rgba(63,198,63,0.06)}
+  .small-muted{font-size:0.85rem;color:var(--muted)}
+</style>
 </head>
 <body>
   <div class="wrap">
-    <!-- LEFT: Monsters -->
     <section class="panel left-col" aria-label="Monstruos">
       <h3>Monstruos</h3>
       <div class="monster-top">
@@ -110,16 +88,13 @@
           <button class="btn" onclick="abrirModalCrearMonstruo()">Crear</button>
         </div>
       </div>
-
       <div class="monster-grid" id="default-monsters" aria-live="polite">
         <div class="monster-empty" id="monster-empty">No hay monstruos. Usa "Crear" para añadirlos.</div>
       </div>
-
       <h3 style="margin-top:8px">Monstruos activos</h3>
       <div class="monsters-active" id="monstruos-activos"></div>
     </section>
 
-    <!-- CENTER: Players + projected map -->
     <main class="panel center-col" aria-label="Jugadores">
       <h3>Jugadores</h3>
       <div style="display:flex;gap:8px;align-items:center">
@@ -127,16 +102,15 @@
         <button class="btn" onclick="addPlayer()">Agregar</button>
         <button class="btn" onclick="resetPlayersToDefault()">Restaurar por defecto</button>
       </div>
-
       <div class="players-grid" id="players-list"></div>
 
-      <!-- MAPA VISIBLE BAJO JUGADORES -->
       <div class="map-area" aria-label="Mapa proyectado">
         <div style="display:flex;justify-content:space-between;align-items:center">
           <div class="muted">Mapa proyectado</div>
-          <div style="display:flex;gap:8px;align-items:center">
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
             <button class="btn small" id="toggle-add-mode" onclick="toggleAddMode()">Modo: Añadir</button>
             <button class="btn small" id="toggle-remove-mode" onclick="toggleRemoveMode()">Modo: Quitar</button>
+            <button class="btn small" onclick="openProjectorWindow()">Abrir proyector</button>
             <button class="btn small" onclick="clearMarkersCurrentMap()">Limpiar marcadores</button>
           </div>
         </div>
@@ -152,7 +126,6 @@
       <div style="margin-top:8px" class="muted">Jugador seleccionado: <strong id="jugador-seleccionado">Ninguno</strong></div>
     </main>
 
-    <!-- RIGHT: Preview / Map tools / Log -->
     <aside class="panel right-col" aria-label="Control">
       <h3>Vista previa</h3>
       <div class="preview-box" id="preview" style="display:flex;gap:12px;align-items:center">
@@ -191,7 +164,6 @@
     </aside>
   </div>
 
-  <!-- Modal crear monstruo -->
   <div id="modal-backdrop" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);align-items:center;justify-content:center;z-index:60">
     <div style="background:var(--panel);padding:14px;border-radius:8px;width:360px;max-width:95%">
       <h3 style="margin:0 0 8px 0">Crear monstruo</h3>
@@ -207,7 +179,6 @@
     </div>
   </div>
 
-  <!-- DICE MODAL -->
   <div id="dice-modal" role="dialog" aria-modal="true" aria-label="Dado d20 animado" style="display:none">
     <div style="display:flex;flex-direction:column;align-items:center;gap:6px">
       <div class="dice-card" aria-hidden="false">
@@ -220,9 +191,7 @@
           <div class="dice-face face-bottom" id="face-bottom">5</div>
         </div>
       </div>
-
       <div class="dice-result" id="dice-result" aria-live="polite">Tirando...</div>
-
       <div class="dice-controls">
         <button id="dice-roll-again">Volver a tirar</button>
         <button id="dice-stop">Detener</button>
@@ -232,17 +201,28 @@
   </div>
 
 <script>
-/* ---------- Helpers ---------- */
 function slugify(s){ return String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-zA-Z0-9\s-]/g,'').trim().toLowerCase().replace(/\s+/g,'-'); }
 function escapeHtml(s){ return String(s).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;'); }
 function log(msg){ const el=document.getElementById('log'); const t=new Date().toLocaleTimeString(); el.innerHTML += `<div>[${t}] ${escapeHtml(msg)}</div>`; el.scrollTop = el.scrollHeight; }
 
-/* ---------- Persistence keys ---------- */
 const LS_PLAYERS = 'dm_players_v1';
 const LS_MAPS = 'dm_maps_v1';
 
-/* ---------- Projection sync ---------- */
 let projectorWindow = null;
+let projectorSyncTimer = null;
+let players = {};
+let currentMap = { src:null, preset:null, id:null, name:null, markers:[] };
+let monstruoSeleccionado = null;
+let monstruosActivos = {};
+const customMonsters = {};
+const defaultList = [];
+const defaultContainer = document.getElementById('default-monsters');
+const playerStateOptions = ['Veneno','Fuego','Congelación','Parálisis'];
+const monsterStateOptions = ['Veneno','Fuego','Congelación','Parálisis'];
+let jugadorSeleccionado = null;
+let addMode = true;
+let removeMode = false;
+
 function buildProjectorState(){
   return {
     players: players || {},
@@ -253,89 +233,78 @@ function buildProjectorState(){
       dataUrl: currentMap && currentMap.src ? currentMap.src : '',
       markers: Array.isArray(currentMap && currentMap.markers) ? currentMap.markers.map(m => ({ ...m })) : []
     },
-    timestamp: new Date().toISOString()
+    timestamp: Date.now()
   };
 }
 
-function sendToProjector(msg){
-  const payload = Object.assign({ source: 'dm', timestamp: new Date().toISOString() }, msg || {});
+function sendToProjector(type, payload){
   if(projectorWindow && !projectorWindow.closed){
-    projectorWindow.postMessage(payload, '*');
-    return true;
-  }
-  if(window.opener && !window.opener.closed){
-    window.opener.postMessage(payload, '*');
+    projectorWindow.postMessage({ type, payload, source: 'dm', timestamp: Date.now() }, '*');
     return true;
   }
   return false;
 }
 
-function syncProjectorState(){
-  if(!projectorWindow || projectorWindow.closed){
-    return;
-  }
-  sendToProjector({ type: 'state_sync', payload: { state: buildProjectorState() } });
+function scheduleProjectorSync(){
+  clearTimeout(projectorSyncTimer);
+  projectorSyncTimer = setTimeout(() => {
+    if(projectorWindow && !projectorWindow.closed){
+      sendToProjector('state_sync', { state: buildProjectorState() });
+    }
+  }, 180);
 }
 
 function openProjectorWindow(){
   if(projectorWindow && !projectorWindow.closed){
     projectorWindow.focus();
-    syncProjectorState();
+    scheduleProjectorSync();
     return projectorWindow;
   }
-
-  projectorWindow = window.open('projector.html', 'dm_projection_window', 'width=1200,height=820,resizable=yes,scrollbars=yes');
+  projectorWindow = window.open('projector.html', 'dm_projection_window', 'width=1400,height=900,resizable=yes,scrollbars=yes');
   if(!projectorWindow){
-    alert('El navegador bloqueó la ventana del proyector. Permite las ventanas emergentes para continuar.');
+    alert('El navegador bloqueó la ventana del proyector. Permite ventanas emergentes.');
     return null;
   }
-
-  setTimeout(()=>{
-    sendToProjector({ type: 'handshake', payload: { state: buildProjectorState() } });
-    log('Ventana del proyector abierta y sincronizada.');
+  setTimeout(() => {
+    sendToProjector('handshake', { state: buildProjectorState() });
   }, 500);
   return projectorWindow;
 }
 
-window.addEventListener('message', function(ev){
-  const msg = ev.data || {};
+function mostrarMapa(){
+  openProjectorWindow();
+  log('Abriendo proyector');
+}
+
+window.addEventListener('message', function(event){
+  const msg = event.data || {};
   if(!msg || !msg.type || msg.source !== 'projection') return;
 
   if(msg.type === 'projection_ready' || msg.type === 'request_state'){
-    sendToProjector({ type: 'handshake', payload: { state: buildProjectorState() } });
+    sendToProjector('handshake', { state: buildProjectorState() });
     return;
   }
 
   if(msg.type === 'marker_added' || msg.type === 'marker_updated' || msg.type === 'marker_removed'){
     if(msg.payload && msg.payload.marker){
-      const incoming = msg.payload.marker;
       currentMap.markers = currentMap.markers || [];
-      const idx = currentMap.markers.findIndex(m => m.id === incoming.id);
-      if(idx === -1){ currentMap.markers.push(incoming); }
-      else { currentMap.markers[idx] = incoming; }
+      const idx = currentMap.markers.findIndex(m => m.id === msg.payload.marker.id);
+      if(idx === -1){ currentMap.markers.push(msg.payload.marker); }
+      else { currentMap.markers[idx] = msg.payload.marker; }
       renderMarkersOnCanvas();
       saveCurrentMapMarkers();
-      log('Marcador sincronizado desde la proyección');
     }
     if(msg.payload && msg.payload.id){
       currentMap.markers = (currentMap.markers || []).filter(m => m.id !== msg.payload.id);
       renderMarkersOnCanvas();
       saveCurrentMapMarkers();
-      log('Marcador eliminado desde la proyección');
     }
   }
 
-  if(msg.type === 'handshake_ack'){
-    log('La ventana de proyección respondió correctamente.');
-  }
-
-  if(msg.type === 'ack'){
-    log('Confirmación recibida del proyector.');
-  }
+  if(msg.type === 'handshake_ack'){ log('La proyección respondió correctamente.'); }
+  if(msg.type === 'ack'){ log('Confirmación recibida del proyector.'); }
 });
 
-/* ---------- Players: dynamic add/remove and persistence ---------- */
-let players = {};
 function defaultPlayers(){
   return {
     guerrero:{key:'guerrero',name:'Guerrero',hp:85,maxHp:100,states:[]},
@@ -344,10 +313,13 @@ function defaultPlayers(){
     clerigo:{key:'clerigo',name:'Clérigo',hp:75,maxHp:100,states:[]}
   };
 }
+
 function loadPlayers(){
   try{ const raw = localStorage.getItem(LS_PLAYERS); players = raw ? JSON.parse(raw) : defaultPlayers(); }catch(e){ players = defaultPlayers(); }
 }
+
 function savePlayers(){ try{ localStorage.setItem(LS_PLAYERS, JSON.stringify(players)); }catch(e){} }
+
 function addPlayer(){
   const nameInput = document.getElementById('new-player-name');
   const name = (nameInput.value || '').trim();
@@ -357,17 +329,20 @@ function addPlayer(){
   while(players[key]){ key = keyBase + '-' + i; i++; }
   players[key] = { key, name, hp:100, maxHp:100, states:[] };
   nameInput.value = '';
-  renderPlayers(); savePlayers(); log(`Jugador agregado: ${name}`);
+  renderPlayers(); savePlayers(); scheduleProjectorSync(); log(`Jugador agregado: ${name}`);
 }
+
 function removePlayer(key){
   if(!players[key]) return;
   if(!confirm(`Eliminar jugador "${players[key].name}"?`)) return;
-  delete players[key]; renderPlayers(); savePlayers(); log(`Jugador eliminado: ${key}`);
+  delete players[key]; renderPlayers(); savePlayers(); scheduleProjectorSync(); log(`Jugador eliminado: ${key}`);
 }
+
 function resetPlayersToDefault(){
   if(!confirm('Restaurar jugadores por defecto y perder cambios?')) return;
-  players = defaultPlayers(); renderPlayers(); savePlayers(); log('Jugadores restaurados a valores por defecto');
+  players = defaultPlayers(); renderPlayers(); savePlayers(); scheduleProjectorSync(); log('Jugadores restaurados a valores por defecto');
 }
+
 function renderPlayers(){
   const container = document.getElementById('players-list'); container.innerHTML = '';
   Object.values(players).forEach(p=>{
@@ -399,30 +374,27 @@ function renderPlayers(){
     `;
     container.appendChild(card);
     card.querySelector('#name-' + p.key).addEventListener('change', e=>{
-      p.name = e.target.value || p.name; savePlayers(); if(jugadorSeleccionado === p.key) document.getElementById('jugador-seleccionado').innerText = p.name; log(`Nombre cambiado: ${p.key} ahora es ${p.name}`);
+      p.name = e.target.value || p.name; savePlayers(); if(jugadorSeleccionado === p.key) document.getElementById('jugador-seleccionado').innerText = p.name; scheduleProjectorSync(); log(`Nombre cambiado: ${p.key} ahora es ${p.name}`);
     });
     renderPlayerStates(p.key);
   });
 }
 
-/* Player HP & states */
-let jugadorSeleccionado = null;
-const playerStateOptions = ['Veneno','Fuego','Congelación','Parálisis'];
-function updatePlayerUI(key){ const p = players[key]; if(!p) return; const fill = document.querySelector(`#hp-${key} .fill`); const percent = Math.round((p.hp / p.maxHp) * 100); if(fill) fill.style.width = `${Math.max(0, Math.min(100, percent))}%`; const label = document.getElementById(`label-${key}`); if(label) label.innerText = p.hp; }
-function changeHP(key, delta){ const p = players[key]; if(!p) return; p.hp = Math.max(0, Math.min(p.maxHp, p.hp + delta)); updatePlayerUI(key); log(`${p.name} HP modificado: ${delta} (ahora ${p.hp})`); }
-function applyManual(key){ const input = document.getElementById('manual-' + key); if(!input) return; const val = parseInt(input.value); if(Number.isNaN(val)){ alert('Ingresa un número válido'); return; } changeHP(key, val); input.value=''; }
-function setMaxHP(key){ const input = document.getElementById('setmax-' + key); if(!input) return; let val = parseInt(input.value); if(Number.isNaN(val) || val < 1){ alert('Vida máxima inválida'); return; } players[key].maxHp = val; players[key].hp = Math.min(players[key].hp, val); updatePlayerUI(key); savePlayers(); log(`${players[key].name} ahora tiene máximo ${val}`); }
-function restoreToMax(key){ const p = players[key]; if(!p) return; p.hp = p.maxHp; updatePlayerUI(key); log(`${p.name} restaurado a vida máxima (${p.maxHp})`); }
-function seleccionarJugador(key){ jugadorSeleccionado = key; document.getElementById('jugador-seleccionado').innerText = players[key].name; document.querySelectorAll('.player-card').forEach(c=>c.classList.remove('selected')); const card = document.getElementById('player-' + key); if(card) card.classList.add('selected'); }
-function togglePlayerState(key, state){ const p = players[key]; if(!p) return; const idx = p.states.indexOf(state); if(idx === -1) p.states.push(state); else p.states.splice(idx,1); renderPlayerStates(key); savePlayers(); }
-function renderPlayerStates(key){ const p = players[key]; if(!p) return; const container = document.getElementById('pstates-' + key); container.innerHTML = ''; playerStateOptions.forEach(s=>{ const btn = document.createElement('button'); btn.type='button'; btn.className='btn small'; btn.style.opacity = p.states.includes(s) ? '1' : '0.65'; btn.innerText = s; btn.onclick = ()=> togglePlayerState(key, s); container.appendChild(btn); }); }
+function updatePlayerUI(key){ const p = players[key]; if(!p) return; const fill = document.querySelector(`#hp-${key} .fill`); const percent = Math.round((p.hp / p.maxHp) * 100); if(fill) fill.style.width = percent + '%'; const label = document.getElementById(`label-${key}`); if(label) label.innerText = p.hp; }
 
-/* ---------- Monsters (modal + create + invoke) ---------- */
-const defaultList = []; // start empty by design
-const defaultContainer = document.getElementById('default-monsters');
-let monstruoSeleccionado = null;
-let monstruosActivos = {};
-const customMonsters = {};
+function changeHP(key, delta){ const p = players[key]; if(!p) return; p.hp = Math.max(0, Math.min(p.maxHp, p.hp + delta)); updatePlayerUI(key); savePlayers(); scheduleProjectorSync(); log(`${p.name} HP modificado: ${delta} (ahora ${p.hp}/${p.maxHp})`); }
+
+function applyManual(key){ const input = document.getElementById('manual-' + key); if(!input) return; const val = parseInt(input.value); if(Number.isNaN(val)){ alert('Ingresa un número válido'); return; } changeHP(key, val); input.value=''; }
+
+function setMaxHP(key){ const input = document.getElementById('setmax-' + key); if(!input) return; let val = parseInt(input.value); if(Number.isNaN(val) || val < 1){ alert('Vida máxima inválida'); return; } const p = players[key]; if(!p) return; p.maxHp = val; if(p.hp > p.maxHp){ p.hp = p.maxHp; } updatePlayerUI(key); savePlayers(); scheduleProjectorSync(); log(`${p.name} máxima vida fijada a ${p.maxHp}`); }
+
+function restoreToMax(key){ const p = players[key]; if(!p) return; p.hp = p.maxHp; updatePlayerUI(key); savePlayers(); scheduleProjectorSync(); log(`${p.name} restaurado a vida máxima (${p.maxHp})`); }
+
+function seleccionarJugador(key){ jugadorSeleccionado = key; document.getElementById('jugador-seleccionado').innerText = players[key].name; document.querySelectorAll('.player-card').forEach(c=>c.classList.remove('selected')); const card = document.getElementById('player-' + key); if(card) card.classList.add('selected'); }
+
+function togglePlayerState(key, state){ const p = players[key]; if(!p) return; const idx = p.states.indexOf(state); if(idx === -1) p.states.push(state); else p.states.splice(idx,1); renderPlayerStates(key); savePlayers(); scheduleProjectorSync(); }
+
+function renderPlayerStates(key){ const p = players[key]; if(!p) return; const container = document.getElementById('pstates-' + key); container.innerHTML = ''; playerStateOptions.forEach(s=>{ const span = document.createElement('button'); span.type='button'; span.className = 'state-pill' + (p.states.includes(s) ? ' active' : ''); span.innerText = s; span.onclick = ()=>togglePlayerState(key, s); container.appendChild(span); }); }
 
 function renderMonsterButtons(){
   defaultContainer.innerHTML = '';
@@ -448,7 +420,7 @@ function renderMonsterButtons(){
   });
 }
 
-function filterMonsters(){ const q = document.getElementById('monster-search').value.trim().toLowerCase(); const buttons = defaultContainer.querySelectorAll('.monster-btn'); buttons.forEach(b=>{ const label = b.innerText.trim().toLowerCase(); b.style.display = label.includes(q) ? '' : 'none'; }); }
+function filterMonsters(){ const q = document.getElementById('monster-search').value.trim().toLowerCase(); const buttons = defaultContainer.querySelectorAll('.monster-btn'); buttons.forEach(b=>{ const txt = b.innerText.toLowerCase(); b.style.display = txt.includes(q) ? '' : 'none'; }); }
 
 function abrirModalCrearMonstruo(){ document.getElementById('modal-backdrop').style.display='flex'; document.getElementById('nuevo-nombre').value=''; document.getElementById('nuevo-archivo').value=''; document.getElementById('nuevo-hp').value='100'; }
 function cerrarModalCrearMonstruo(){ document.getElementById('modal-backdrop').style.display='none'; }
@@ -458,15 +430,10 @@ function resizeImageFileToDataURL(file, maxSize, callback){
   reader.onload = function(ev){
     const img = new Image();
     img.onload = function(){
-      let w = img.width, h = img.height;
-      const ratio = w / h;
+      let w = img.width, h = img.height; const ratio = w / h;
       if(w > h){ if(w > maxSize){ w = maxSize; h = Math.round(maxSize / ratio); } }
       else { if(h > maxSize){ h = maxSize; w = Math.round(maxSize * ratio); } }
-      const canvas = document.createElement('canvas');
-      canvas.width = w; canvas.height = h;
-      const ctx = canvas.getContext('2d');
-      ctx.drawImage(img, 0, 0, w, h);
-      callback(null, canvas.toDataURL('image/png'));
+      const canvas = document.createElement('canvas'); canvas.width = w; canvas.height = h; const ctx = canvas.getContext('2d'); ctx.drawImage(img, 0, 0, w, h); callback(null, canvas.toDataURL('image/png'));
     };
     img.onerror = function(){ callback(new Error('Error cargando imagen')); };
     img.src = ev.target.result;
@@ -481,7 +448,6 @@ function crearMonstruoDesdeModal(){
   const hp=Math.max(1,Math.min(2000,parseInt(document.getElementById('nuevo-hp').value)||100));
   if(!nombre){ alert('Nombre requerido'); return; }
   const key=slugify(nombre);
-
   function finalizeCreate(imgUrl){
     customMonsters[key]={name:nombre,imgUrl:imgUrl,maxHp:hp};
     defaultList.unshift(nombre);
@@ -490,33 +456,26 @@ function crearMonstruoDesdeModal(){
     log(`Monstruo personalizado creado: ${nombre} (HP ${hp})`);
     seleccionarMonstruo(nombre);
   }
-
-  if(archivo){
-    resizeImageFileToDataURL(archivo, 160, function(err, dataUrl){
-      if(err){ const fallback = URL.createObjectURL(archivo); finalizeCreate(fallback); }
-      else { finalizeCreate(dataUrl); }
-    });
-  } else { finalizeCreate(null); }
+  if(archivo){ resizeImageFileToDataURL(archivo, 160, function(err, dataUrl){ if(err){ finalizeCreate(URL.createObjectURL(archivo)); } else { finalizeCreate(dataUrl); } }); }
+  else { finalizeCreate(null); }
 }
 
 function seleccionarMonstruo(name){ monstruoSeleccionado = name; renderPreview(name); log('Monstruo preparado: ' + name); }
+
 function invocarMonstruo(){
   if(!monstruoSeleccionado){ log('Selecciona un monstruo primero'); return; }
   const uid = slugify(monstruoSeleccionado) + '-' + Date.now();
   const key = slugify(monstruoSeleccionado);
   const maxHp = (customMonsters[key] && customMonsters[key].maxHp) ? customMonsters[key].maxHp : 100;
   monstruosActivos[uid] = { name:monstruoSeleccionado, hp:maxHp, maxHp:maxHp, states:[], img:(customMonsters[key] && customMonsters[key].imgUrl) || null };
-  renderMonstruoActivo(uid);
-  renderPreview(monstruoSeleccionado);
-  log('Monstruo invocado: ' + monstruoSeleccionado);
+  renderMonstruoActivo(uid); renderPreview(monstruoSeleccionado); scheduleProjectorSync(); log('Monstruo invocado: ' + monstruoSeleccionado);
 }
 
 function renderMonstruoActivo(uid){
   const m = monstruosActivos[uid];
   const wrap = document.getElementById('monstruos-activos');
   const el = document.createElement('div');
-  el.className = 'monster-card';
-  el.id = 'monster-' + uid;
+  el.className = 'monster-card'; el.id = 'monster-' + uid;
   el.innerHTML = `
     <div class="row">
       <div style="display:flex;gap:8px;align-items:center">
@@ -533,82 +492,31 @@ function renderMonstruoActivo(uid){
     <div id="states-${uid}" class="monster-states" style="margin-top:8px"></div>
   `;
   el.onclick = ()=> seleccionarMonstruoActivo(uid);
-  wrap.prepend(el);
-  renderStatesFor(uid);
+  wrap.prepend(el); renderStatesFor(uid);
 }
 
-function modificarHPMonstruo(uid, delta){ const m = monstruosActivos[uid]; if(!m) return; m.hp = Math.max(0, Math.min(m.maxHp, m.hp + delta)); const label=document.getElementById('mlabel-'+uid); if(label) label.innerText = `${m.hp}/${m.maxHp}`; const fill = document.querySelector(`#mhp-${uid} .fill`); if(fill) fill.style.width = `${Math.round((m.hp/m.maxHp)*100)}%`; log(`${m.name} HP modificado: ${delta}`); }
-function eliminarMonstruo(uid){ const m=monstruosActivos[uid]; if(!m) return; const el=document.getElementById('monster-'+uid); if(el) el.remove(); delete monstruosActivos[uid]; log(`Monstruo eliminado: ${m.name}`); }
+function modificarHPMonstruo(uid, delta){ const m = monstruosActivos[uid]; if(!m) return; m.hp = Math.max(0, Math.min(m.maxHp, m.hp + delta)); const label=document.getElementById('mlabel-'+uid); if(label) label.innerText = `${m.hp}/${m.maxHp}`; const hpFill=document.querySelector(`#mhp-${uid} .fill`); if(hpFill) hpFill.style.width = `${Math.max(0,Math.min(100,(m.hp/m.maxHp)*100))}%`; scheduleProjectorSync(); log(`${m.name} HP modificado: ${delta} (ahora ${m.hp}/${m.maxHp})`); }
+
+function eliminarMonstruo(uid){ const m=monstruosActivos[uid]; if(!m) return; const el=document.getElementById('monster-'+uid); if(el) el.remove(); delete monstruosActivos[uid]; scheduleProjectorSync(); log(`Monstruo eliminado: ${m.name}`); }
 
 let monstruoUIDSeleccionado = null;
 function seleccionarMonstruoActivo(uid){ document.querySelectorAll('#monstruos-activos .monster-card').forEach(c=>c.classList.remove('selected')); const card=document.getElementById('monster-'+uid); if(card) card.classList.add('selected'); monstruoUIDSeleccionado = uid; }
 
-/* Monster states per-card */
-const monsterStateOptions = ['Veneno','Fuego','Congelación','Parálisis'];
-function renderStatesFor(uid){
-  const m = monstruosActivos[uid]; if(!m) return;
-  const container = document.getElementById('states-' + uid);
-  if(!container) return;
-  container.innerHTML = '';
-  monsterStateOptions.forEach(s=>{
-    const span = document.createElement('div');
-    span.className = 'state-pill' + (m.states.includes(s) ? ' active' : '');
-    span.innerText = s;
-    span.onclick = (e)=>{ e.stopPropagation(); const idx = m.states.indexOf(s); if(idx===-1) m.states.push(s); else m.states.splice(idx,1); renderStatesFor(uid); log(`${m.name} estados: ${m.states.join(', ') || 'ninguno'}`); };
-    container.appendChild(span);
-  });
-}
+function renderStatesFor(uid){ const m = monstruosActivos[uid]; if(!m) return; const container = document.getElementById('states-' + uid); if(!container) return; container.innerHTML = ''; monsterStateOptions.forEach(s=>{ const span = document.createElement('div'); span.className = 'state-pill' + (m.states.includes(s) ? ' active' : ''); span.innerText = s; span.onclick = (e)=>{ e.stopPropagation(); const idx = m.states.indexOf(s); if(idx===-1) m.states.push(s); else m.states.splice(idx,1); renderStatesFor(uid); scheduleProjectorSync(); log(`${m.name} estados: ${m.states.join(', ') || 'ninguno'}`); }; container.appendChild(span); }); }
 
-/* ---------- Preview ---------- */
-function renderPreview(name){
-  const previewThumb = document.getElementById('preview-thumb');
-  const title = document.getElementById('preview-title');
-  const sub = document.getElementById('preview-sub');
+function renderPreview(name){ const previewThumb = document.getElementById('preview-thumb'); const title = document.getElementById('preview-title'); const sub = document.getElementById('preview-sub'); if(!name){ previewThumb.style.display = 'none'; previewThumb.src=''; title.innerText='Vista previa'; sub.innerText='Selecciona un monstruo o mapa para ver aquí.'; return; } const key = slugify(name); const custom = customMonsters[key]; if(custom && custom.imgUrl){ previewThumb.src = custom.imgUrl; previewThumb.style.display='block'; title.innerText = custom.name; sub.innerText = `HP máx: ${custom.maxHp}`; } else { previewThumb.style.display='none'; previewThumb.src=''; title.innerText = name; sub.innerText = 'Sin miniatura'; } }
 
-  if(!name){
-    previewThumb.style.display = 'none';
-    previewThumb.src = '';
-    title.innerText = 'Vista previa';
-    sub.innerText = 'Selecciona un monstruo o mapa para ver aquí.';
-    return;
-  }
-
-  const key = slugify(name);
-  const custom = customMonsters[key];
-
-  if(custom && custom.imgUrl){
-    previewThumb.src = custom.imgUrl;
-    previewThumb.style.display = 'block';
-    title.innerText = custom.name;
-    sub.innerText = `HP máx: ${custom.maxHp}`;
-  } else {
-    previewThumb.style.display = 'none';
-    previewThumb.src = '';
-    title.innerText = name;
-    sub.innerText = 'Sin miniatura';
-  }
-}
-
-/* ---------- Maps: save/load with markers ---------- */
-let currentMap = { src:null, preset:null, id:null, name:null, markers:[] }; // markers: [{id,x,y,label}]
-const mapsKey = LS_MAPS;
 function loadMaps(){ try{ const raw = localStorage.getItem(mapsKey); return raw ? JSON.parse(raw) : []; }catch(e){ return []; } }
 function saveMaps(list){ try{ localStorage.setItem(mapsKey, JSON.stringify(list)); }catch(e){} }
+const mapsKey = LS_MAPS;
 
 function previewMapFile(e){
   const file = e.target.files && e.target.files[0];
   if(!file) return;
   const reader = new FileReader();
   reader.onload = function(ev){
-    currentMap.src = ev.target.result;
-    currentMap.preset = null;
-    currentMap.id = null;
-    currentMap.name = file.name;
-    currentMap.markers = [];
-    document.getElementById('map-preview').src = currentMap.src;
-    document.getElementById('map-preview').style.display = 'block';
-    setProjectedMap(currentMap);
-    log(`Mapa cargado para previsualizar: ${file.name}`);
+    currentMap.src = ev.target.result; currentMap.preset = null; currentMap.id = null; currentMap.name = file.name; currentMap.markers = [];
+    document.getElementById('map-preview').src = currentMap.src; document.getElementById('map-preview').style.display = 'block'; setProjectedMap(currentMap); scheduleProjectorSync(); log(`Mapa cargado para previsualizar: ${file.name}`);
   };
   reader.readAsDataURL(file);
 }
@@ -619,288 +527,74 @@ function saveCurrentMap(){
   if(!name){ alert('Ingresa un nombre para el mapa'); return; }
   const maps = loadMaps();
   const mapObj = { id: Date.now().toString(), name, dataUrl: currentMap.src, markers: currentMap.markers || [] };
-  maps.unshift(mapObj);
-  saveMaps(maps);
-  document.getElementById('map-name').value = '';
-  renderMapsList();
-  log(`Mapa guardado: ${name}`);
-}
+  maps.unshift(mapObj); saveMaps(maps); document.getElementById('map-name').value=''; renderMapsList(); scheduleProjectorSync(); log(`Mapa guardado: ${name}`); }
 
-function renderMapsList(){
-  const list = loadMaps();
-  const wrap = document.getElementById('maps-list'); wrap.innerHTML = '';
-  if(list.length === 0){ wrap.innerHTML = '<div class="muted">No hay mapas guardados.</div>'; return; }
-  list.forEach(m=>{
-    const el = document.createElement('div'); el.className = 'map-item';
-    el.innerHTML = `<img class="map-thumb" src="${m.dataUrl}" alt="${escapeHtml(m.name)}"><div style="flex:1"><div style="font-weight:600">${escapeHtml(m.name)}</div></div><div style="display:flex;gap:6px"><button class="btn small" onclick="loadMap('${m.id}')">Cargar</button><button class="btn small" onclick="deleteMap('${m.id}')">Borrar</button></div>`;
-    wrap.appendChild(el);
-  });
-}
+function renderMapsList(){ const list = loadMaps(); const wrap = document.getElementById('maps-list'); wrap.innerHTML=''; if(list.length === 0){ wrap.innerHTML = '<div class="muted">No hay mapas guardados.</div>'; return; } list.forEach(m=>{ const el = document.createElement('div'); el.className = 'map-item'; el.innerHTML = `<img class="map-thumb" src="${m.dataUrl}" alt="${escapeHtml(m.name)}"><div style="flex:1"><div style="font-weight:600">${escapeHtml(m.name)}</div></div><div style="display:flex;gap:8px"><button class="btn small" onclick="loadMap('${m.id}')">Abrir</button><button class="btn small" onclick="deleteMap('${m.id}')">Borrar</button></div>`; wrap.appendChild(el); }); }
 
-function loadMap(id){
-  const maps = loadMaps();
-  const m = maps.find(x=>x.id===id);
-  if(!m) return;
-  currentMap.src = m.dataUrl; currentMap.name = m.name; currentMap.id = m.id; currentMap.markers = m.markers || [];
-  document.getElementById('map-preview').src = currentMap.src; document.getElementById('map-preview').style.display = 'block';
-  setProjectedMap(currentMap);
-  log(`Mapa cargado: ${m.name}`);
-}
+function loadMap(id){ const maps = loadMaps(); const m = maps.find(x=>x.id===id); if(!m) return; currentMap.src = m.dataUrl; currentMap.name = m.name; currentMap.id = m.id; currentMap.markers = m.markers || []; document.getElementById('map-preview').src = currentMap.src; document.getElementById('map-preview').style.display = 'block'; setProjectedMap(currentMap); log(`Mapa cargado: ${m.name}`); }
 
-function deleteMap(id){
-  if(!confirm('Eliminar mapa guardado?')) return;
-  let maps = loadMaps(); maps = maps.filter(x=>x.id!==id); saveMaps(maps); renderMapsList(); log('Mapa eliminado');
-}
+function deleteMap(id){ if(!confirm('Eliminar mapa guardado?')) return; let maps = loadMaps(); maps = maps.filter(x=>x.id!==id); saveMaps(maps); renderMapsList(); log('Mapa eliminado'); }
 
-/* ---------- Projected map + markers interaction ---------- */
 const canvas = document.getElementById('map-canvas');
 const canvasImg = document.getElementById('map-canvas-img');
-let addMode = true;
-let removeMode = false;
 
 function setProjectedMap(mapObj){
-  if(!mapObj || !mapObj.src){ canvasImg.src = ''; canvasImg.style.display = 'none'; clearMarkersDOM(); currentMap = { src:null, preset:null, id:null, name:null, markers:[] }; renderMarkersList(); return; }
-  currentMap = mapObj;
-  canvasImg.src = mapObj.src; canvasImg.style.display = 'block';
+  if(!mapObj || !mapObj.src){ canvasImg.src=''; canvasImg.style.display='none'; clearMarkersDOM(); currentMap = { src:null, preset:null, id:null, name:null, markers:[] }; renderMarkersList(); scheduleProjectorSync(); return; }
+  currentMap = { ...mapObj, markers: mapObj.markers || [] };
+  canvasImg.src = mapObj.src; canvasImg.style.display='block';
   setTimeout(()=> renderMarkersOnCanvas(), 120);
-  syncProjectorState();
+  scheduleProjectorSync();
 }
 
-function toggleAddMode(){
-  addMode = !addMode;
-  if(addMode){ removeMode = false; document.getElementById('toggle-add-mode').innerText = 'Modo: Añadir'; document.getElementById('toggle-remove-mode').innerText = 'Modo: Quitar'; }
-  else document.getElementById('toggle-add-mode').innerText = 'Modo: Añadir (off)';
-}
-function toggleRemoveMode(){
-  removeMode = !removeMode;
-  if(removeMode){ addMode = false; document.getElementById('toggle-remove-mode').innerText = 'Modo: Quitar'; document.getElementById('toggle-add-mode').innerText = 'Modo: Añadir'; }
-  else document.getElementById('toggle-remove-mode').innerText = 'Modo: Quitar (off)';
-}
+function toggleAddMode(){ addMode = !addMode; if(addMode){ removeMode = false; document.getElementById('toggle-add-mode').innerText = 'Modo: Añadir'; document.getElementById('toggle-remove-mode').innerText = 'Modo: Quitar'; } else { document.getElementById('toggle-add-mode').innerText = 'Modo: Añadir (off)'; } }
+function toggleRemoveMode(){ removeMode = !removeMode; if(removeMode){ addMode = false; document.getElementById('toggle-remove-mode').innerText = 'Modo: Quitar'; document.getElementById('toggle-add-mode').innerText = 'Modo: Añadir'; } else { document.getElementById('toggle-remove-mode').innerText = 'Modo: Quitar (off)'; } }
 
-canvas.addEventListener('click', (e)=>{
-  if(!currentMap.src){ log('No hay mapa proyectado. Carga o guarda uno.'); return; }
-  const rect = canvas.getBoundingClientRect();
-  const x = (e.clientX - rect.left) / rect.width;
-  const y = (e.clientY - rect.top) / rect.height;
-  if(removeMode){
-    const nearest = findNearestMarker(x,y,0.03);
-    if(nearest) { removeMarkerById(nearest.id); saveCurrentMapMarkers(); }
-    return;
-  }
-  if(!addMode) { log('Activa "Modo: Añadir" para colocar marcadores'); return; }
-  const label = prompt('Nombre del punto de interés (dejar vacío para "Punto")') || 'Punto';
-  const id = Date.now().toString();
-  const marker = { id, x: clamp01(x), y: clamp01(y), label };
-  currentMap.markers = currentMap.markers || [];
-  currentMap.markers.push(marker);
-  renderMarkersOnCanvas();
-  saveCurrentMapMarkers();
-  sendToProjector({ type: 'marker_added', payload: { marker } });
-  log(`Marcador agregado: ${label}`);
-});
+canvas.addEventListener('click', (e)=>{ if(!currentMap.src){ log('No hay mapa proyectado. Carga o guarda uno.'); return; } const rect = canvas.getBoundingClientRect(); const x = (e.clientX - rect.left) / rect.width; const y = (e.clientY - rect.top) / rect.height; if(removeMode){ const nearest = findNearestMarker(x,y,0.03); if(nearest){ removeMarkerById(nearest.id); saveCurrentMapMarkers(); } return; } if(!addMode){ log('Activa "Modo: Añadir" para colocar marcadores'); return; } const label = prompt('Nombre del punto de interés (dejar vacío para "Punto")') || 'Punto'; const id = Date.now().toString(); const marker = { id, x: clamp01(x), y: clamp01(y), label }; currentMap.markers = currentMap.markers || []; currentMap.markers.push(marker); renderMarkersOnCanvas(); saveCurrentMapMarkers(); scheduleProjectorSync(); sendToProjector('marker_added', { marker }); log(`Marcador agregado: ${label}`); });
 
 function clamp01(v){ return Math.max(0, Math.min(1, v)); }
+function findNearestMarker(x,y,threshold){ if(!currentMap.markers || currentMap.markers.length===0) return null; let best = null; let bestDist = Infinity; currentMap.markers.forEach(m=>{ const dx = m.x - x; const dy = m.y - y; const d = Math.sqrt(dx*dx + dy*dy); if(d < bestDist){ bestDist = d; best = m; } }); return bestDist <= threshold ? best : null; }
 
-function findNearestMarker(x,y,threshold){
-  if(!currentMap.markers || currentMap.markers.length===0) return null;
-  let best = null; let bestDist = Infinity;
-  currentMap.markers.forEach(m=>{
-    const dx = m.x - x; const dy = m.y - y; const d = Math.sqrt(dx*dx + dy*dy);
-    if(d < bestDist){ bestDist = d; best = m; }
-  });
-  return bestDist <= threshold ? best : null;
-}
+function renderMarkersOnCanvas(){ clearMarkersDOM(); const wrap = document.getElementById('map-canvas'); if(!currentMap.markers || currentMap.markers.length===0){ renderMarkersList(); return; } currentMap.markers.forEach((m, idx)=>{ const el = document.createElement('div'); el.className = 'marker'; el.style.left = (m.x * 100) + '%'; el.style.top = (m.y * 100) + '%'; el.title = m.label; el.innerText = (idx+1); el.dataset.id = m.id; const lbl = document.createElement('div'); lbl.className = 'marker-label'; lbl.innerText = m.label; el.addEventListener('click', (ev)=>{ ev.stopPropagation(); if(removeMode){ if(confirm(`Eliminar marcador "${m.label}"?`)){ removeMarkerById(m.id); saveCurrentMapMarkers(); } return; } const newLabel = prompt('Editar etiqueta del marcador', m.label); if(newLabel !== null){ m.label = newLabel || m.label; renderMarkersOnCanvas(); saveCurrentMapMarkers(); scheduleProjectorSync(); sendToProjector('marker_updated', { marker: m }); log(`Marcador renombrado: ${m.label}`); } }); wrap.appendChild(el); wrap.appendChild(lbl); }); renderMarkersList(); }
 
-function renderMarkersOnCanvas(){
-  clearMarkersDOM();
-  const wrap = document.getElementById('map-canvas');
-  if(!currentMap.markers || currentMap.markers.length===0) { renderMarkersList(); return; }
-  currentMap.markers.forEach((m, idx)=>{
-    const el = document.createElement('div');
-    el.className = 'marker';
-    el.style.left = (m.x * 100) + '%';
-    el.style.top = (m.y * 100) + '%';
-    el.title = m.label;
-    el.innerText = (idx+1);
-    el.dataset.id = m.id;
-    const lbl = document.createElement('div'); lbl.className = 'marker-label'; lbl.innerText = m.label;
-    el.addEventListener('click', (ev)=>{
-      ev.stopPropagation();
-      if(removeMode){
-        if(confirm(`Eliminar marcador "${m.label}"?`)){ removeMarkerById(m.id); saveCurrentMapMarkers(); }
-        return;
-      }
-      const newLabel = prompt('Editar etiqueta del marcador', m.label);
-      if(newLabel !== null){ m.label = newLabel || m.label; renderMarkersOnCanvas(); saveCurrentMapMarkers(); sendToProjector({ type: 'marker_updated', payload: { marker: m } }); log(`Marcador renombrado: ${m.label}`); }
-    });
-    wrap.appendChild(el);
-    wrap.appendChild(lbl);
-  });
-  renderMarkersList();
-}
+function clearMarkersDOM(){ const wrap = document.getElementById('map-canvas'); Array.from(wrap.querySelectorAll('.marker')).forEach(n=>n.remove()); Array.from(wrap.querySelectorAll('.marker-label')).forEach(n=>n.remove()); }
 
-function clearMarkersDOM(){
-  const wrap = document.getElementById('map-canvas');
-  Array.from(wrap.querySelectorAll('.marker')).forEach(n=>n.remove());
-  Array.from(wrap.querySelectorAll('.marker-label')).forEach(n=>n.remove());
-}
+function removeMarkerById(id){ if(!currentMap.markers) return; currentMap.markers = currentMap.markers.filter(m=>m.id !== id); renderMarkersOnCanvas(); sendToProjector('marker_removed', { id }); scheduleProjectorSync(); log('Marcador eliminado'); }
 
-function removeMarkerById(id){
-  if(!currentMap.markers) return;
-  currentMap.markers = currentMap.markers.filter(m=>m.id !== id);
-  renderMarkersOnCanvas();
-  sendToProjector({ type: 'marker_removed', payload: { id } });
-  log('Marcador eliminado');
-}
+function clearMarkersCurrentMap(){ if(!currentMap.markers || currentMap.markers.length===0) return; if(!confirm('Eliminar todos los marcadores de este mapa?')) return; currentMap.markers = []; renderMarkersOnCanvas(); saveCurrentMapMarkers(); scheduleProjectorSync(); log('Marcadores limpiados del mapa actual'); }
 
-function clearMarkersCurrentMap(){
-  if(!currentMap.markers || currentMap.markers.length===0) return;
-  if(!confirm('Eliminar todos los marcadores de este mapa?')) return;
-  currentMap.markers = [];
-  renderMarkersOnCanvas();
-  saveCurrentMapMarkers();
-  log('Marcadores limpiados del mapa actual');
-}
+function renderMarkersList(){ const wrap = document.getElementById('markers-list'); wrap.innerHTML=''; if(!currentMap.markers || currentMap.markers.length===0){ wrap.innerHTML = '<div class="muted">No hay marcadores en este mapa.</div>'; return; } currentMap.markers.forEach((m, i)=>{ const el = document.createElement('div'); el.style.display='flex'; el.style.justifyContent='space-between'; el.style.alignItems='center'; el.innerHTML = `<div style="display:flex;gap:8px;align-items:center"><div style="width:18px;height:18px;border-radius:50%;background:var(--marker);border:2px solid var(--marker-border);display:flex;align-items:center;justify-content:center;font-size:10px;color:#111;font-weight:700">${i+1}</div><span>${escapeHtml(m.label)}</span></div><button class="btn small" onclick="panToMarker('${m.id}')">Ver</button>`; wrap.appendChild(el); }); }
 
-function renderMarkersList(){
-  const wrap = document.getElementById('markers-list'); wrap.innerHTML = '';
-  if(!currentMap.markers || currentMap.markers.length===0){ wrap.innerHTML = '<div class="muted">No hay marcadores en este mapa.</div>'; return; }
-  currentMap.markers.forEach((m, i)=>{
-    const el = document.createElement('div'); el.style.display='flex'; el.style.justifyContent='space-between'; el.style.alignItems='center';
-    el.innerHTML = `<div style="display:flex;gap:8px;align-items:center"><div style="width:18px;height:18px;border-radius:50%;background:var(--marker);border:2px solid var(--marker-border);display:inline-block"></div><span>${escapeHtml(m.label || `Punto ${i+1}`)}</span></div><button class="btn small" onclick="panToMarker('${m.id}')">Ir</button>`;
-    wrap.appendChild(el);
-  });
-}
+function panToMarker(id){ const m = (currentMap.markers||[]).find(x=>x.id===id); if(!m) return; const el = Array.from(document.querySelectorAll('.marker')).find(n=>n.dataset.id===id); if(el){ el.animate([{ transform:'translate(-50%,-50%) scale(1.0)' },{ transform:'translate(-50%,-50%) scale(1.4)' },{ transform:'translate(-50%,-50%) scale(1.0)' }], { duration:600 }); } }
 
-function panToMarker(id){
-  const m = (currentMap.markers||[]).find(x=>x.id===id); if(!m) return;
-  const el = Array.from(document.querySelectorAll('.marker')).find(n=>n.dataset.id===id);
-  if(el){ el.animate([{ transform:'translate(-50%,-50%) scale(1.0)' },{ transform:'translate(-50%,-50%) scale(1.4)' },{ transform:'translate(-50%,-50%) scale(1.0)' }], { duration:600 }); }
-}
+function saveCurrentMapMarkers(){ if(!currentMap) return; if(currentMap.id){ const maps = loadMaps(); const idx = maps.findIndex(x=>x.id===currentMap.id); if(idx !== -1){ maps[idx].markers = currentMap.markers || []; saveMaps(maps); renderMapsList(); } } }
 
-function saveCurrentMapMarkers(){
-  if(!currentMap) return;
-  if(currentMap.id){
-    const maps = loadMaps();
-    const idx = maps.findIndex(x=>x.id===currentMap.id);
-    if(idx !== -1){ maps[idx].markers = currentMap.markers || []; saveMaps(maps); renderMapsList(); }
-  }
-  syncProjectorState();
-}
-
-/* ---------- Map presets (quick) ---------- */
 const presets = {
-  plano: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600"><rect width="100%" height="100%" fill="%23222"/><text x="50%" y="50%" fill="%23ddd" font-size="48" text-anchor="middle" font-family="Arial">Plano</text></svg>',
-  bosque: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600"><rect width="100%" height="100%" fill="%231b3"/><text x="50%" y="50%" fill="%23000" font-size="48" text-anchor="middle" font-family="Arial">Bosque</text></svg>',
-  dungeon: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600"><rect width="100%" height="100%" fill="%23111"/><text x="50%" y="50%" fill="%23fff" font-size="48" text-anchor="middle" font-family="Arial">Dungeon</text></svg>'
+  plano: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600"><rect width="100%" height="100%" fill="%23222"/><text x="50%" y="50%" fill="%23ddd" font-size="36" text-anchor="middle" dominant-baseline="middle">Plano</text></svg>',
+  bosque: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600"><rect width="100%" height="100%" fill="%231b3"/><text x="50%" y="50%" fill="%23000" font-size="36" text-anchor="middle" dominant-baseline="middle">Bosque</text></svg>',
+  dungeon: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600"><rect width="100%" height="100%" fill="%23111"/><text x="50%" y="50%" fill="%23fff" font-size="36" text-anchor="middle" dominant-baseline="middle">Dungeon</text></svg>'
 };
-function seleccionarMapaPreset(key){ if(!key){ currentMap.src=null; currentMap.preset=null; actualizarMapPreview(); return; } currentMap.src = presets[key]; currentMap.preset = key; currentMap.id = Date.now().toString(); currentMap.name = key; currentMap.markers = []; setProjectedMap(currentMap); }
+function seleccionarMapaPreset(key){ if(!key){ currentMap.src=null; currentMap.preset=null; actualizarMapPreview(); return; } currentMap.src = presets[key]; currentMap.preset = key; currentMap.id = null; currentMap.name = key; currentMap.markers = []; setProjectedMap(currentMap); log(`Mapa preset cargado: ${key}`); }
 function actualizarMapPreview(){ const img = document.getElementById('map-preview'); if(currentMap.src){ img.src = currentMap.src; img.style.display='block'; } else { img.src=''; img.style.display='none'; } }
-function mostrarMapa(){
-  const w = openProjectorWindow();
-  if(w){
-    log('Abriendo la ventana del proyector');
-    setTimeout(()=> sendToProjector({ type: 'handshake', payload: { state: buildProjectorState() } }), 300);
-  }
-}
 
-/* ---------- Dice (animated) ---------- */
 const diceModal = document.getElementById('dice-modal');
 const dice3d = document.getElementById('dice-3d');
 const diceResult = document.getElementById('dice-result');
 const btnAgain = document.getElementById('dice-roll-again');
 const btnStop = document.getElementById('dice-stop');
 const btnClose = document.getElementById('dice-close');
-
 let spinTimer = null;
 let finalTimer = null;
 let isSpinning = false;
-
 function randomD20(){ return Math.floor(Math.random()*20) + 1; }
+function assignFaces(number){ const faces = { front: number, back: ((number + 7) % 20) || 20, right: ((number + 12) % 20) || 20, left: ((number + 3) % 20) || 20, top: ((number + 15) % 20) || 20, bottom: ((number + 5) % 20) || 20 }; document.getElementById('face-front').innerText = faces.front; document.getElementById('face-back').innerText = faces.back; document.getElementById('face-right').innerText = faces.right; document.getElementById('face-left').innerText = faces.left; document.getElementById('face-top').innerText = faces.top; document.getElementById('face-bottom').innerText = faces.bottom; }
+function startSpin(duration = 1800){ if(isSpinning) return; isSpinning = true; dice3d.style.animation = `dice-spin ${duration}ms cubic-bezier(.2,.9,.2,1) forwards`; spinTimer = setInterval(()=>{ const temp = randomD20(); assignFaces(temp); diceResult.innerText = '...'; }, 120); }
+function stopSpin(finalNumber){ if(!isSpinning) return; isSpinning = false; clearInterval(spinTimer); spinTimer = null; assignFaces(finalNumber); dice3d.style.animation=''; dice3d.style.transform='rotateX(0deg) rotateY(0deg) rotateZ(0deg)'; diceResult.innerText = `Resultado: ${finalNumber}`; log(`Tirada d20: ${finalNumber}`); }
+function tirarDadoAnimado(){ diceModal.style.display='flex'; diceResult.innerText='Tirando...'; const duration=1200 + Math.floor(Math.random()*1400); startSpin(duration); const final = randomD20(); finalTimer = setTimeout(()=>{ stopSpin(final); finalTimer = null; }, duration + 60); }
+btnAgain.addEventListener('click', ()=>{ if(finalTimer){ clearTimeout(finalTimer); finalTimer = null; } if(spinTimer){ clearInterval(spinTimer); spinTimer = null; } dice3d.style.animation=''; isSpinning = false; tirarDadoAnimado(); });
+btnStop.addEventListener('click', ()=>{ if(spinTimer) clearInterval(spinTimer); if(finalTimer) clearTimeout(finalTimer); const final = randomD20(); stopSpin(final); finalTimer = null; });
+btnClose.addEventListener('click', ()=>{ if(spinTimer) clearInterval(spinTimer); if(finalTimer) clearTimeout(finalTimer); spinTimer = finalTimer = null; isSpinning = false; dice3d.style.animation=''; diceModal.style.display='none'; });
+function tirarDado(){ tirarDadoAnimado(); return null; }
 
-function assignFaces(number){
-  const faces = {
-    front: number,
-    back: ((number + 7) % 20) || 20,
-    right: ((number + 12) % 20) || 20,
-    left: ((number + 3) % 20) || 20,
-    top: ((number + 15) % 20) || 20,
-    bottom: ((number + 5) % 20) || 20
-  };
-  document.getElementById('face-front').innerText = faces.front;
-  document.getElementById('face-back').innerText = faces.back;
-  document.getElementById('face-right').innerText = faces.right;
-  document.getElementById('face-left').innerText = faces.left;
-  document.getElementById('face-top').innerText = faces.top;
-  document.getElementById('face-bottom').innerText = faces.bottom;
-}
-
-function startSpin(duration = 1800){
-  if(isSpinning) return;
-  isSpinning = true;
-  dice3d.style.animation = `dice-spin ${duration}ms cubic-bezier(.2,.9,.2,1) forwards`;
-  spinTimer = setInterval(()=>{
-    const temp = randomD20();
-    assignFaces(temp);
-    diceResult.innerText = '...';
-  }, 120);
-}
-
-function stopSpin(finalNumber){
-  if(!isSpinning) return;
-  isSpinning = false;
-  clearInterval(spinTimer);
-  spinTimer = null;
-  assignFaces(finalNumber);
-  dice3d.style.animation = '';
-  dice3d.style.transform = 'rotateX(0deg) rotateY(0deg) rotateZ(0deg)';
-  diceResult.innerText = `Resultado: ${finalNumber}`;
-  log(`Tirada d20: ${finalNumber}`);
-}
-
-function tirarDadoAnimado(){
-  diceModal.style.display = 'flex';
-  diceResult.innerText = 'Tirando...';
-  const duration = 1200 + Math.floor(Math.random()*1400);
-  startSpin(duration);
-  const final = randomD20();
-  finalTimer = setTimeout(()=> {
-    stopSpin(final);
-    finalTimer = null;
-  }, duration + 60);
-}
-
-btnAgain.addEventListener('click', ()=>{
-  if(finalTimer) { clearTimeout(finalTimer); finalTimer = null; }
-  if(spinTimer) { clearInterval(spinTimer); spinTimer = null; }
-  dice3d.style.animation = '';
-  isSpinning = false;
-  tirarDadoAnimado();
-});
-
-btnStop.addEventListener('click', ()=>{
-  if(spinTimer) clearInterval(spinTimer);
-  if(finalTimer) clearTimeout(finalTimer);
-  const final = randomD20();
-  stopSpin(final);
-  finalTimer = null;
-});
-
-btnClose.addEventListener('click', ()=>{
-  if(spinTimer) clearInterval(spinTimer);
-  if(finalTimer) clearTimeout(finalTimer);
-  spinTimer = finalTimer = null;
-  isSpinning = false;
-  dice3d.style.animation = '';
-  diceModal.style.display = 'none';
-});
-
-function tirarDado(){
-  tirarDadoAnimado();
-  return null;
-}
-
-/* ---------- Misc ---------- */
 function limpiarPreview(){ renderPreview(null); log('Preview limpiada'); }
 function reiniciar(){
   players = defaultPlayers(); savePlayers(); renderPlayers();
@@ -910,22 +604,13 @@ function reiniciar(){
   document.getElementById('jugador-seleccionado').innerText='Ninguno'; document.getElementById('log').innerHTML=''; log('Pantalla reiniciada');
 }
 
-/* ---------- Init ---------- */
 (function init(){
-  loadPlayers();
-  renderPlayers();
-  renderMonsterButtons();
-  renderMapsList();
-  const maps = loadMaps();
-  if(maps.length>0){ loadMap(maps[0].id); }
+  loadPlayers(); renderPlayers(); renderMonsterButtons(); renderMapsList(); const maps = loadMaps(); if(maps.length>0){ loadMap(maps[0].id); }
   log('Interfaz DM lista — todo restaurado y funcionando');
 })();
 
-/* Keep layout stable on resize */
 window.addEventListener('resize', ()=> {
-  document.querySelectorAll('.monster-grid, .players-grid, .monsters-active, .maps-list').forEach(el=>{
-    el.style.display='none'; void el.offsetHeight; el.style.display='';
-  });
+  document.querySelectorAll('.monster-grid, .players-grid, .monsters-active, .maps-list').forEach(el=>{ el.style.display='none'; void el.offsetHeight; el.style.display=''; });
 });
 </script>
 </body>
