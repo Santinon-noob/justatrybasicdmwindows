@@ -21,7 +21,7 @@
   .overlay-area{position:absolute;inset:0;z-index:50;pointer-events:none}
 
   /* Markers positioned relative to image bounds */
-  .marker{position:absolute;width:20px;height:20px;border-radius:50%;background:var(--marker);border:2px solid var(--marker-border);transform:translate(-50%,-50%);display:flex;align-items:center;justify-content:center;font-weight:700;color:#111;pointer-events:auto}
+  .marker{position:absolute;width:20px;height:20px;border-radius:50%;background:var(--marker);border:2px solid var(--marker-border);transform:translate(-50%,-50%);display:flex;align-items:center;justify-content:center;z-index:40}
   .label{position:absolute;transform:translate(-50%,-140%);background:rgba(0,0,0,0.7);padding:4px 8px;border-radius:6px;font-size:13px;white-space:nowrap;color:#fff;z-index:41;pointer-events:none}
 
   /* Overlays for creatures / players - no decorative borders on images */
@@ -53,6 +53,21 @@
 
   .hint{position:absolute;left:12px;bottom:12px;background:var(--panel);padding:8px;border-radius:6px;color:var(--muted);font-size:13px;z-index:60}
   .fullscreen{position:absolute;right:12px;bottom:12px;background:var(--panel);padding:8px;border-radius:6px;color:var(--muted);cursor:pointer;z-index:60}
+
+  /* Status icons for entities */
+  .status-icons{position:absolute;top:-6px;right:-6px;display:flex;gap:6px;z-index:55}
+  .status-icon{width:20px;height:20px;border-radius:4px;background:rgba(255,255,255,0.06);display:inline-flex;align-items:center;justify-content:center;font-size:12px}
+
+  /* Dice animation */
+  .dice-container{position:absolute;left:50%;top:18%;transform:translateX(-50%);z-index:80;pointer-events:none}
+  .dice{width:84px;height:84px;border-radius:10px;background:#fff;color:#000;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:28px;box-shadow:0 8px 20px rgba(0,0,0,0.6);opacity:0}
+  .dice.rolling{animation:dice-roll 900ms cubic-bezier(.2,.7,.2,1) forwards}
+  @keyframes dice-roll{
+    0% { transform: translateX(-50%) translateY(0) rotate(0deg) scale(0.8); opacity:0 }
+    20% { transform: translateX(-50%) translateY(-18px) rotate(180deg) scale(1.06); opacity:1 }
+    60% { transform: translateX(-50%) translateY(-6px) rotate(540deg) scale(0.98); }
+    100% { transform: translateX(-50%) translateY(0) rotate(720deg) scale(1); opacity:1 }
+  }
 </style>
 </head>
 <body>
@@ -99,6 +114,7 @@ function mapToContainerXY(normX, normY){
 
 // Keep DOM references to avoid recreating
 const dom = { players: new Map(), monsters: new Map(), markers: new Map() };
+let diceEl = null;
 
 function ensureMapImage(url){
   if(!url){ mapImg.src = ''; return; }
@@ -135,6 +151,18 @@ function upsertMarkerDOM(m){
 
 function clearAllMarkersDOM(){ dom.markers.forEach(v=>{ if(v.el) v.el.remove(); if(v.label) v.label.remove(); }); dom.markers.clear(); }
 
+function renderStatusIcons(container, states){
+  // states: array of strings
+  container.innerHTML = '';
+  if(!Array.isArray(states) || states.length === 0) return;
+  const map = { 'Veneno':'☠️', 'Fuego':'🔥', 'Congelación':'❄️', 'Parálisis':'⚡️' };
+  states.forEach(s=>{
+    const sp = document.createElement('div'); sp.className = 'status-icon'; sp.title = s; sp.setAttribute('aria-label', s);
+    sp.innerText = map[s] || s[0] || '?';
+    container.appendChild(sp);
+  });
+}
+
 function upsertPlayerDOM(key, p){
   const id = key;
   let node = dom.players.get(id);
@@ -153,13 +181,17 @@ function upsertPlayerDOM(key, p){
     const hpText = document.createElement('div'); hpText.className='hp-text';
     const rotateHandle = document.createElement('div'); rotateHandle.className='rotate-handle';
 
+    // status icons container
+    const statusWrap = document.createElement('div'); statusWrap.className = 'status-icons';
+
     hpFrame.appendChild(nameText); hpFrame.appendChild(hpBar); hpFrame.appendChild(hpText);
     wrap.appendChild(img); wrap.appendChild(hpFrame); wrap.appendChild(rotateHandle);
+    wrap.appendChild(statusWrap);
     overlayArea.appendChild(wrap);
 
     makeElementInteractive(wrap, id, 'player');
 
-    node = { root: wrap, img, hpBar, fill, hpText, nameText };
+    node = { root: wrap, img, hpBar, fill, hpText, nameText, statusWrap };
     dom.players.set(id, node);
   }
   // update content only
@@ -167,10 +199,19 @@ function upsertPlayerDOM(key, p){
   node.hpText.innerText = `${p.hp} / ${p.maxHp}`;
   const percent = Math.round((p.hp / p.maxHp) * 100) || 0;
   node.fill.style.width = percent + '%';
-  // apply position/rotation from state if present
+  // status icons
+  renderStatusIcons(node.statusWrap, p.states || []);
+
+  // apply position/rotation from state if present and image layout available
+  const imgRect = mapImg.getBoundingClientRect();
   if(typeof p.x === 'number' && typeof p.y === 'number'){
-    const pos = mapToContainerXY(clamp01(p.x), clamp01(p.y));
-    node.root.style.left = pos.left + 'px'; node.root.style.top = pos.top + 'px';
+    if(imgRect.width > 0 && imgRect.height > 0){
+      const pos = mapToContainerXY(clamp01(p.x), clamp01(p.y));
+      node.root.style.left = pos.left + 'px'; node.root.style.top = pos.top + 'px';
+    } else {
+      // If image not laid out yet, preserve current position for existing nodes
+      if(!node.root.style.left) { node.root.style.left = '50%'; node.root.style.top = '80%'; }
+    }
   }
   if(typeof p.rotation === 'number'){
     node.root.style.transform = `translate(-50%,-50%) rotate(${p.rotation}deg)`;
@@ -181,8 +222,12 @@ function upsertPlayerDOM(key, p){
     setTimeout(()=>{ if(node.root) node.root.remove(); dom.players.delete(id); }, 420);
   } else {
     node.root.classList.remove('death');
-    node.root.classList.add('spawn');
-    setTimeout(()=> node.root.classList.remove('spawn'), 600);
+    // only add spawn on newly created nodes to avoid visual jump on updates
+    if(!node._justCreated){
+      node.root.classList.add('spawn');
+      setTimeout(()=> node.root.classList.remove('spawn'), 600);
+    }
+    node._justCreated = false;
   }
 }
 
@@ -202,13 +247,16 @@ function upsertMonsterDOM(uid, m){
     const hpText = document.createElement('div'); hpText.className='hp-text';
     const rotateHandle = document.createElement('div'); rotateHandle.className='rotate-handle';
 
+    const statusWrap = document.createElement('div'); statusWrap.className = 'status-icons';
+
     hpFrame.appendChild(nameText); hpFrame.appendChild(hpBar); hpFrame.appendChild(hpText);
     wrap.appendChild(img); wrap.appendChild(hpFrame); wrap.appendChild(rotateHandle);
+    wrap.appendChild(statusWrap);
     overlayArea.appendChild(wrap);
 
     makeElementInteractive(wrap, uid, 'monster');
 
-    node = { root: wrap, img, hpBar, fill, hpText, nameText };
+    node = { root: wrap, img, hpBar, fill, hpText, nameText, statusWrap };
     dom.monsters.set(uid, node);
   }
   node.nameText.innerText = m.name || node.nameText.innerText;
@@ -216,9 +264,15 @@ function upsertMonsterDOM(uid, m){
   const percent = Math.round((m.hp / m.maxHp) * 100) || 0;
   node.fill.style.width = percent + '%';
 
+  // status icons
+  renderStatusIcons(node.statusWrap, m.states || []);
+
+  const imgRect = mapImg.getBoundingClientRect();
   if(typeof m.x === 'number' && typeof m.y === 'number'){
-    const pos = mapToContainerXY(clamp01(m.x), clamp01(m.y));
-    node.root.style.left = pos.left + 'px'; node.root.style.top = pos.top + 'px';
+    if(imgRect.width > 0 && imgRect.height > 0){
+      const pos = mapToContainerXY(clamp01(m.x), clamp01(m.y));
+      node.root.style.left = pos.left + 'px'; node.root.style.top = pos.top + 'px';
+    }
   }
   if(typeof m.rotation === 'number'){
     node.root.style.transform = `translate(-50%,-50%) rotate(${m.rotation}deg)`;
@@ -229,8 +283,11 @@ function upsertMonsterDOM(uid, m){
     setTimeout(()=>{ if(node.root) node.root.remove(); dom.monsters.delete(uid); }, 420);
   } else {
     node.root.classList.remove('death');
-    node.root.classList.add('spawn');
-    setTimeout(()=> node.root.classList.remove('spawn'), 600);
+    if(!node._justCreated){
+      node.root.classList.add('spawn');
+      setTimeout(()=> node.root.classList.remove('spawn'), 600);
+    }
+    node._justCreated = false;
   }
 }
 
@@ -329,6 +386,31 @@ function showChest(style){
   setTimeout(()=>{ overlay.remove(); }, 1400);
 }
 
+// Dice UI
+function showDiceRoll(payload){
+  if(!diceEl){
+    diceEl = document.createElement('div');
+    diceEl.className = 'dice-container';
+    const box = document.createElement('div'); box.className = 'dice'; box.id = 'dice-box';
+    diceEl.appendChild(box);
+    document.body.appendChild(diceEl);
+  }
+  const box = diceEl.querySelector('.dice');
+  const val = (payload && payload.value) ? String(payload.value) : '?';
+  box.innerText = val;
+  // restart animation reliably
+  box.classList.remove('rolling');
+  // force reflow
+  void box.offsetWidth;
+  box.classList.add('rolling');
+  // remove rolling after animation ends but keep value visible briefly
+  box.addEventListener('animationend', ()=>{
+    box.classList.remove('rolling');
+    // keep visible for a short moment then fade
+    setTimeout(()=>{ if(diceEl) diceEl.remove(); diceEl = null; }, 900);
+  }, { once: true });
+}
+
 // Sync incoming state without recreating existing elements when possible
 window.addEventListener('message', (ev)=>{
   const m = ev.data || {};
@@ -339,20 +421,37 @@ window.addEventListener('message', (ev)=>{
       if(m.payload && m.payload.state){
         const s = m.payload.state;
         state = s; state.timestamp = m.timestamp || nowISO();
-        // map
+        // ensure map image is set first, then apply markers/entities after layout available
         ensureMapImage(state.currentMap && state.currentMap.dataUrl);
-        // markers
-        clearAllMarkersDOM();
-        if(state.currentMap && Array.isArray(state.currentMap.markers)){
-          state.currentMap.markers.forEach(upsertMarkerDOM);
+
+        const applyState = ()=>{
+          try{
+            // markers
+            clearAllMarkersDOM();
+            if(state.currentMap && Array.isArray(state.currentMap.markers)){
+              state.currentMap.markers.forEach(upsertMarkerDOM);
+            }
+            // players
+            Object.entries(state.players || {}).forEach(([k,p])=> upsertPlayerDOM(k, p));
+            // monsters
+            Object.entries(state.monsters || {}).forEach(([k,mon])=> upsertMonsterDOM(k, mon));
+            setStatus('estado sincronizado');
+            connected = true;
+            postToOpener({ type:'ack', source:'projection', payload:{ ref:'state_sync' }, timestamp: nowISO() });
+          }catch(err){ console.warn('applyState error', err); }
+        };
+
+        // If image layout available, apply immediately. Otherwise wait for load to avoid positioning to default/center.
+        const imgRect = mapImg.getBoundingClientRect();
+        if(imgRect.width > 0 && imgRect.height > 0){
+          applyState();
+        } else {
+          // attach onload once
+          const onload = ()=>{ applyState(); mapImg.removeEventListener('load', onload); };
+          mapImg.addEventListener('load', onload);
+          // fallback in case load doesn't fire (cached or other issues)
+          setTimeout(()=>{ if(!connected) applyState(); }, 250);
         }
-        // players
-        Object.entries(state.players || {}).forEach(([k,p])=> upsertPlayerDOM(k, p));
-        // monsters
-        Object.entries(state.monsters || {}).forEach(([k,mon])=> upsertMonsterDOM(k, mon));
-        setStatus('estado sincronizado');
-        connected = true;
-        postToOpener({ type:'ack', source:'projection', payload:{ ref:'state_sync' }, timestamp: nowISO() });
       }
       break;
     case 'marker_added':
@@ -360,13 +459,16 @@ window.addEventListener('message', (ev)=>{
       if(m.payload && m.payload.marker){ upsertMarkerDOM(m.payload.marker); }
       break;
     case 'marker_removed':
-      if(m.payload && m.payload.id){ const id = m.payload.id; const entry = dom.markers.get(id); if(entry){ if(entry.el) entry.el.remove(); if(entry.label) entry.label.remove(); dom.markers.delete(id);} }
+      if(m.payload && m.payload.id){ const id = m.payload.id; const entry = dom.markers.get(id); if(entry){ if(entry.el) entry.el.remove(); if(entry.label) entry.label.remove(); dom.markers.delete(id); } }
       break;
     case 'map_changed':
       if(m.payload && m.payload.map){ ensureMapImage(m.payload.map.dataUrl); }
       break;
     case 'chest_open':
       if(m.payload && m.payload.style){ showChest(m.payload.style); }
+      break;
+    case 'dice_roll':
+      if(m.payload){ showDiceRoll(m.payload); }
       break;
     default:
       break;
@@ -377,8 +479,7 @@ btnFull.addEventListener('click', ()=> { if(!document.fullscreenElement) documen
 
 // Initial handshake ping
 let handshakeAttempts = 0;
-function tryHandshakeRetry(){ if(handshakeAttempts >= 6) return; handshakeAttempts++; setStatus('esperando handshake del DM (intento '+handshakeAttempts+')'); postToOpener({ type:'projection_ready', source:'projection', timestamp: nowISO() }); setTimeout(tryHandshakeRetry, 1200 * handshakeAttempts); }
-setTimeout(tryHandshakeRetry, 800);
+function tryHandshakeRetry(){ if(handshakeAttempts >= 6) return; handshakeAttempts++; setStatus('esperando handshake del DM (intento '+handshakeAttempts+')'); postToOpener({ type:'projection_ready', source:'projection', timestamp: nowISO() }); setTimeout(tryHandshakeRetry, 800); }
 
 setStatus('listo para handshake');
 </script>
