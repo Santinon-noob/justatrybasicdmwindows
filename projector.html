@@ -25,7 +25,9 @@
   .label{position:absolute;transform:translate(-50%,-140%);background:rgba(0,0,0,0.7);padding:4px 8px;border-radius:6px;font-size:13px;white-space:nowrap;color:#fff;z-index:41;pointer-events:none}
 
   /* Overlays for creatures / players - no decorative borders on images */
-  .entity{position:absolute;pointer-events:auto;transform-origin:center center;display:flex;flex-direction:column;gap:6px;align-items:center;transition:left 220ms linear, top 220ms linear, transform 200ms}
+  /* outer element handles left/top and centering; inner handles rotation so they don't conflict */
+  .entity{position:absolute;pointer-events:auto;display:flex;flex-direction:column;align-items:center;transition:left 220ms linear, top 220ms linear;}
+  .entity-inner{transform-origin:center center;display:flex;flex-direction:column;gap:6px;align-items:center;transition:transform 200ms ease}
   .entity-img{width:64px;height:64px;object-fit:contain;display:block}
   .hp-frame{background:rgba(0,0,0,0.6);padding:6px;border-radius:6px;display:flex;flex-direction:column;gap:6px;align-items:center;cursor:grab}
   .hp-frame:active{cursor:grabbing}
@@ -34,7 +36,7 @@
   .hp-text{font-size:12px}
 
   /* Draggable / rotatable handle */
-  .rotate-handle{width:12px;height:12px;border-radius:50%;background:#fff;opacity:0.8;position:absolute;right:-8px;top:-8px;cursor:pointer}
+  .rotate-handle{width:12px;height:12px;border-radius:50%;background:#fff;opacity:0.8;position:absolute;right:-8px;top:-8px;cursor:pointer;z-index:60}
 
   /* Spawn / death animations */
   .spawn { animation:spawn 420ms ease-out forwards }
@@ -184,9 +186,11 @@ function upsertPlayerDOM(key, p){
     const wrap = document.createElement('div');
     wrap.className = 'entity player';
     wrap.dataset.id = id; wrap.dataset.type = 'player';
-    // don't force percent defaults after creation; we'll rely on lastPos if available
-    wrap.style.left = '50%'; wrap.style.top = '80%'; wrap.style.transform = 'translate(-50%,-50%) rotate(0deg)';
+    // center via translate on the inner by keeping wrap transform for centering
+    wrap.style.left = '50%'; wrap.style.top = '80%';
     wrap.style.pointerEvents = 'auto';
+
+    const inner = document.createElement('div'); inner.className = 'entity-inner';
 
     const img = document.createElement('img'); img.className='entity-img'; img.alt = p.name || 'player'; img.src = p.img || '';
     const hpFrame = document.createElement('div'); hpFrame.className='hp-frame';
@@ -199,13 +203,15 @@ function upsertPlayerDOM(key, p){
     const statusWrap = document.createElement('div'); statusWrap.className = 'status-icons';
 
     hpFrame.appendChild(nameText); hpFrame.appendChild(hpBar); hpFrame.appendChild(hpText);
-    wrap.appendChild(img); wrap.appendChild(hpFrame); wrap.appendChild(rotateHandle);
-    wrap.appendChild(statusWrap);
+    inner.appendChild(img); inner.appendChild(hpFrame); inner.appendChild(rotateHandle); inner.appendChild(statusWrap);
+    // apply centering transform on inner so outer left/top are center coordinates
+    inner.style.transform = 'translate(-50%,-50%) rotate(0deg)';
+    wrap.appendChild(inner);
     overlayArea.appendChild(wrap);
 
     makeElementInteractive(wrap, id, 'player');
 
-    node = { root: wrap, img, hpFrame, hpBar, fill, hpText, nameText, statusWrap, _lastRotation: null };
+    node = { root: wrap, inner, img, hpFrame, hpBar, fill, hpText, nameText, statusWrap, _lastRotation: null };
     dom.players.set(id, node);
     // record initial lastPos if normalized coords present
     if(typeof p.x === 'number' && typeof p.y === 'number') lastPos.players.set(id, { x:p.x, y:p.y });
@@ -239,10 +245,10 @@ function upsertPlayerDOM(key, p){
     }
   }
 
-  // rotation - avoid forcing transform reset if unchanged
+  // rotation - apply only to inner so centering translate isn't overwritten
   const wantRot = (typeof p.rotation === 'number') ? p.rotation : 0;
   if(node._lastRotation === null || Math.abs(node._lastRotation - wantRot) > 0.5){
-    node.root.style.transform = `translate(-50%,-50%) rotate(${wantRot}deg)`;
+    node.inner.style.transform = `translate(-50%,-50%) rotate(${wantRot}deg)`;
     node._lastRotation = wantRot;
   }
 
@@ -266,9 +272,10 @@ function upsertMonsterDOM(uid, m){
     const wrap = document.createElement('div');
     wrap.className = 'entity monster';
     wrap.dataset.id = uid; wrap.dataset.type = 'monster';
-    wrap.style.left = '50%'; wrap.style.top = '50%'; wrap.style.transform = 'translate(-50%,-50%) rotate(0deg)';
+    wrap.style.left = '50%'; wrap.style.top = '50%';
     wrap.style.pointerEvents = 'auto';
 
+    const inner = document.createElement('div'); inner.className = 'entity-inner';
     const img = document.createElement('img'); img.className='entity-img'; img.alt = m.name || 'monster'; if(m.img) img.src = m.img;
     const hpFrame = document.createElement('div'); hpFrame.className='hp-frame';
     const nameText = document.createElement('div'); nameText.className='hp-text'; nameText.innerText = m.name || '';
@@ -279,13 +286,14 @@ function upsertMonsterDOM(uid, m){
     const statusWrap = document.createElement('div'); statusWrap.className = 'status-icons';
 
     hpFrame.appendChild(nameText); hpFrame.appendChild(hpBar); hpFrame.appendChild(hpText);
-    wrap.appendChild(img); wrap.appendChild(hpFrame); wrap.appendChild(rotateHandle);
-    wrap.appendChild(statusWrap);
+    inner.appendChild(img); inner.appendChild(hpFrame); inner.appendChild(rotateHandle); inner.appendChild(statusWrap);
+    inner.style.transform = 'translate(-50%,-50%) rotate(0deg)';
+    wrap.appendChild(inner);
     overlayArea.appendChild(wrap);
 
     makeElementInteractive(wrap, uid, 'monster');
 
-    node = { root: wrap, img, hpFrame, hpBar, fill, hpText, nameText, statusWrap, _lastRotation: null };
+    node = { root: wrap, inner, img, hpFrame, hpBar, fill, hpText, nameText, statusWrap, _lastRotation: null };
     dom.monsters.set(uid, node);
     if(typeof m.x === 'number' && typeof m.y === 'number') lastPos.monsters.set(uid, { x:m.x, y:m.y });
     node._justCreated = true;
@@ -318,7 +326,7 @@ function upsertMonsterDOM(uid, m){
 
   const wantRot = (typeof m.rotation === 'number') ? m.rotation : 0;
   if(node._lastRotation === null || Math.abs(node._lastRotation - wantRot) > 0.5){
-    node.root.style.transform = `translate(-50%,-50%) rotate(${wantRot}deg)`;
+    node.inner.style.transform = `translate(-50%,-50%) rotate(${wantRot}deg)`;
     node._lastRotation = wantRot;
   }
 
@@ -364,7 +372,8 @@ window.addEventListener('mousemove', (e)=>{
     const rect = activeRotate.el.getBoundingClientRect();
     const cx = rect.left + rect.width/2; const cy = rect.top + rect.height/2;
     const ang = Math.atan2(e.clientY - cy, e.clientX - cx) * (180/Math.PI);
-    activeRotate.el.style.transform = `translate(-50%,-50%) rotate(${ang}deg)`;
+    const inner = activeRotate.el.querySelector('.entity-inner');
+    if(inner) inner.style.transform = `translate(-50%,-50%) rotate(${ang}deg)`;
   }
 });
 window.addEventListener('mouseup', (e)=>{
@@ -378,8 +387,9 @@ window.addEventListener('mouseup', (e)=>{
     // convert to normalized within image
     const normX = imgRect.width>0 ? clamp01((cx - (imgRect.left - containerRect.left)) / imgRect.width) : clamp01(cx / containerRect.width);
     const normY = imgRect.height>0? clamp01((cy - (imgRect.top - containerRect.top)) / imgRect.height) : clamp01(cy / containerRect.height);
-    // rotation
-    const transform = getComputedStyle(el).transform;
+    // rotation (read from inner)
+    const inner = el.querySelector('.entity-inner');
+    const transform = inner ? getComputedStyle(inner).transform : null;
     let rotation = 0;
     if(transform && transform !== 'none'){
       const values = transform.split('(')[1].split(')')[0].split(',');
@@ -387,12 +397,17 @@ window.addEventListener('mouseup', (e)=>{
     }
     postToOpener({ type:'element_moved', source:'projection', payload:{ id, type, x:normX, y:normY, rotation }, timestamp: nowISO() });
     // store last pixel pos so subsequent state syncs don't snap
-    lastPos[type + 's' === 'players' ? 'players' : (type === 'monster' ? 'monsters' : 'players')];
+    if(type === 'player'){
+      lastPos.players.set(id, { x:normX, y:normY, left: el.offsetLeft, top: el.offsetTop });
+    } else if(type === 'monster'){
+      lastPos.monsters.set(id, { x:normX, y:normY, left: el.offsetLeft, top: el.offsetTop });
+    }
     activeDrag = null;
   }
   if(activeRotate){
     const el = activeRotate.el; const id = el.dataset.id; const type = el.dataset.type;
-    const transform = getComputedStyle(el).transform;
+    const inner = el.querySelector('.entity-inner');
+    const transform = inner ? getComputedStyle(inner).transform : null;
     let rotation = 0;
     if(transform && transform !== 'none'){
       const values = transform.split('(')[1].split(')')[0].split(',');
@@ -406,6 +421,11 @@ window.addEventListener('mouseup', (e)=>{
     const normY = imgRect.height>0? clamp01((cy - (imgRect.top - containerRect.top)) / imgRect.height) : clamp01(cy / containerRect.height);
 
     postToOpener({ type:'element_moved', source:'projection', payload:{ id, type, x:normX, y:normY, rotation }, timestamp: nowISO() });
+    if(type === 'player'){
+      lastPos.players.set(id, { x:normX, y:normY, left: el.offsetLeft, top: el.offsetTop });
+    } else if(type === 'monster'){
+      lastPos.monsters.set(id, { x:normX, y:normY, left: el.offsetLeft, top: el.offsetTop });
+    }
     activeRotate = null;
   }
 });
