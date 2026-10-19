@@ -25,7 +25,7 @@
   .label{position:absolute;transform:translate(-50%,-140%);background:rgba(0,0,0,0.7);padding:4px 8px;border-radius:6px;font-size:13px;white-space:nowrap;color:#fff;z-index:41;pointer-events:none}
 
   /* Overlays for creatures / players - no decorative borders on images */
-  .entity{position:absolute;pointer-events:auto;transform-origin:center center;display:flex;flex-direction:column;gap:6px;align-items:center}
+  .entity{position:absolute;pointer-events:auto;transform-origin:center center;display:flex;flex-direction:column;gap:6px;align-items:center;transition:left 220ms linear, top 220ms linear, transform 200ms}
   .entity-img{width:64px;height:64px;object-fit:contain;display:block}
   .hp-frame{background:rgba(0,0,0,0.6);padding:6px;border-radius:6px;display:flex;flex-direction:column;gap:6px;align-items:center;cursor:grab}
   .hp-frame:active{cursor:grabbing}
@@ -57,6 +57,7 @@
   /* Status icons for entities */
   .status-icons{position:absolute;top:-6px;right:-6px;display:flex;gap:6px;z-index:55}
   .status-icon{width:20px;height:20px;border-radius:4px;background:rgba(255,255,255,0.06);display:inline-flex;align-items:center;justify-content:center;font-size:12px}
+  .status-icon img{width:100%;height:100%;display:block}
 
   /* Dice animation */
   .dice-container{position:absolute;left:50%;top:18%;transform:translateX(-50%);z-index:80;pointer-events:none}
@@ -114,6 +115,7 @@ function mapToContainerXY(normX, normY){
 
 // Keep DOM references to avoid recreating
 const dom = { players: new Map(), monsters: new Map(), markers: new Map() };
+const lastPos = { players: new Map(), monsters: new Map() };
 let diceEl = null;
 
 function ensureMapImage(url){
@@ -151,15 +153,26 @@ function upsertMarkerDOM(m){
 
 function clearAllMarkersDOM(){ dom.markers.forEach(v=>{ if(v.el) v.el.remove(); if(v.label) v.label.remove(); }); dom.markers.clear(); }
 
+// Small embedded SVG icons for statuses (data URIs)
+function getStatusSvgDataUrl(name){
+  const map = {
+    'Veneno': '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><rect width="24" height="24" rx="4" fill="#5b9f46"/><path d="M12 3v10" stroke="#092" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="17" r="2" fill="#092"/></svg>',
+    'Fuego': '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><rect width="24" height="24" rx="4" fill="#ff7a00"/><path d="M12 3c1.8 2.5 4 4 4 6 0 3-2 4-4 6-2-2-4-3-4-6 0-2 2.2-3.5 4-6z" fill="#fff"/></svg>',
+    'Congelación': '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><rect width="24" height="24" rx="4" fill="#6ec8ff"/><path d="M12 6v12M6 12h12M8 8l8 8M8 16l8-8" stroke="#fff" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+    'Parálisis': '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><rect width="24" height="24" rx="4" fill="#ffd166"/><path d="M8 12h8M10 8l4 8" stroke="#333" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+  };
+  const svg = map[name] || '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><rect width="24" height="24" rx="4" fill="#888"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-size="10" fill="#fff">?</text></svg>';
+  return 'data:image/svg+xml;utf8,' + encodeURIComponent(svg);
+}
+
 function renderStatusIcons(container, states){
-  // states: array of strings
   container.innerHTML = '';
   if(!Array.isArray(states) || states.length === 0) return;
-  const map = { 'Veneno':'☠️', 'Fuego':'🔥', 'Congelación':'❄️', 'Parálisis':'⚡️' };
   states.forEach(s=>{
-    const sp = document.createElement('div'); sp.className = 'status-icon'; sp.title = s; sp.setAttribute('aria-label', s);
-    sp.innerText = map[s] || s[0] || '?';
-    container.appendChild(sp);
+    const wrap = document.createElement('div'); wrap.className = 'status-icon';
+    const img = document.createElement('img'); img.src = getStatusSvgDataUrl(s); img.alt = s; img.title = s;
+    wrap.appendChild(img);
+    container.appendChild(wrap);
   });
 }
 
@@ -171,6 +184,7 @@ function upsertPlayerDOM(key, p){
     const wrap = document.createElement('div');
     wrap.className = 'entity player';
     wrap.dataset.id = id; wrap.dataset.type = 'player';
+    // don't force percent defaults after creation; we'll rely on lastPos if available
     wrap.style.left = '50%'; wrap.style.top = '80%'; wrap.style.transform = 'translate(-50%,-50%) rotate(0deg)';
     wrap.style.pointerEvents = 'auto';
 
@@ -191,8 +205,10 @@ function upsertPlayerDOM(key, p){
 
     makeElementInteractive(wrap, id, 'player');
 
-    node = { root: wrap, img, hpFrame, hpBar, fill, hpText, nameText, statusWrap };
+    node = { root: wrap, img, hpFrame, hpBar, fill, hpText, nameText, statusWrap, _lastRotation: null };
     dom.players.set(id, node);
+    // record initial lastPos if normalized coords present
+    if(typeof p.x === 'number' && typeof p.y === 'number') lastPos.players.set(id, { x:p.x, y:p.y });
     node._justCreated = true;
   }
   // update content only
@@ -203,27 +219,39 @@ function upsertPlayerDOM(key, p){
   // status icons
   renderStatusIcons(node.statusWrap, p.states || []);
 
-  // apply position/rotation from state if present and image layout available
   const imgRect = mapImg.getBoundingClientRect();
   if(typeof p.x === 'number' && typeof p.y === 'number'){
     if(imgRect.width > 0 && imgRect.height > 0){
       const pos = mapToContainerXY(clamp01(p.x), clamp01(p.y));
-      node.root.style.left = pos.left + 'px'; node.root.style.top = pos.top + 'px';
+      // Only set if different to avoid flicker
+      const curLeft = parseFloat(node.root.style.left) || 0;
+      const curTop = parseFloat(node.root.style.top) || 0;
+      if(Math.abs(curLeft - pos.left) > 0.5 || Math.abs(curTop - pos.top) > 0.5){
+        node.root.style.left = pos.left + 'px'; node.root.style.top = pos.top + 'px';
+      }
+      lastPos.players.set(id, { x:p.x, y:p.y, left: pos.left, top: pos.top });
     } else {
-      // If image not laid out yet, preserve current position for existing nodes
-      if(!node.root.style.left) { node.root.style.left = '50%'; node.root.style.top = '80%'; }
+      // Image not ready - preserve last pixel if we have it so it doesn't snap to defaults
+      const last = lastPos.players.get(id);
+      if(last && typeof last.left === 'number' && typeof last.top === 'number'){
+        node.root.style.left = last.left + 'px'; node.root.style.top = last.top + 'px';
+      }
     }
   }
-  if(typeof p.rotation === 'number'){
-    node.root.style.transform = `translate(-50%,-50%) rotate(${p.rotation}deg)`;
+
+  // rotation - avoid forcing transform reset if unchanged
+  const wantRot = (typeof p.rotation === 'number') ? p.rotation : 0;
+  if(node._lastRotation === null || Math.abs(node._lastRotation - wantRot) > 0.5){
+    node.root.style.transform = `translate(-50%,-50%) rotate(${wantRot}deg)`;
+    node._lastRotation = wantRot;
   }
+
   // if hp 0 animate disappearance
   if(p.hp === 0){
     node.root.classList.add('death');
-    setTimeout(()=>{ if(node.root) node.root.remove(); dom.players.delete(id); }, 420);
+    setTimeout(()=>{ if(node.root) node.root.remove(); dom.players.delete(id); lastPos.players.delete(id); }, 420);
   } else {
     node.root.classList.remove('death');
-    // only add spawn on newly created nodes to avoid visual jump on updates
     if(node._justCreated){
       node.root.classList.add('spawn');
       setTimeout(()=> node.root.classList.remove('spawn'), 600);
@@ -257,8 +285,9 @@ function upsertMonsterDOM(uid, m){
 
     makeElementInteractive(wrap, uid, 'monster');
 
-    node = { root: wrap, img, hpFrame, hpBar, fill, hpText, nameText, statusWrap };
+    node = { root: wrap, img, hpFrame, hpBar, fill, hpText, nameText, statusWrap, _lastRotation: null };
     dom.monsters.set(uid, node);
+    if(typeof m.x === 'number' && typeof m.y === 'number') lastPos.monsters.set(uid, { x:m.x, y:m.y });
     node._justCreated = true;
   }
   node.nameText.innerText = m.name || node.nameText.innerText;
@@ -273,17 +302,29 @@ function upsertMonsterDOM(uid, m){
   if(typeof m.x === 'number' && typeof m.y === 'number'){
     if(imgRect.width > 0 && imgRect.height > 0){
       const pos = mapToContainerXY(clamp01(m.x), clamp01(m.y));
-      node.root.style.left = pos.left + 'px'; node.root.style.top = pos.top + 'px';
+      const curLeft = parseFloat(node.root.style.left) || 0;
+      const curTop = parseFloat(node.root.style.top) || 0;
+      if(Math.abs(curLeft - pos.left) > 0.5 || Math.abs(curTop - pos.top) > 0.5){
+        node.root.style.left = pos.left + 'px'; node.root.style.top = pos.top + 'px';
+      }
+      lastPos.monsters.set(uid, { x:m.x, y:m.y, left: pos.left, top: pos.top });
+    } else {
+      const last = lastPos.monsters.get(uid);
+      if(last && typeof last.left === 'number' && typeof last.top === 'number'){
+        node.root.style.left = last.left + 'px'; node.root.style.top = last.top + 'px';
+      }
     }
   }
-  if(typeof m.rotation === 'number'){
-    node.root.classList.remove('spawn');
-    node.root.style.transform = `translate(-50%,-50%) rotate(${m.rotation}deg)`;
+
+  const wantRot = (typeof m.rotation === 'number') ? m.rotation : 0;
+  if(node._lastRotation === null || Math.abs(node._lastRotation - wantRot) > 0.5){
+    node.root.style.transform = `translate(-50%,-50%) rotate(${wantRot}deg)`;
+    node._lastRotation = wantRot;
   }
 
   if(m.hp === 0){
     node.root.classList.add('death');
-    setTimeout(()=>{ if(node.root) node.root.remove(); dom.monsters.delete(uid); }, 420);
+    setTimeout(()=>{ if(node.root) node.root.remove(); dom.monsters.delete(uid); lastPos.monsters.delete(uid); }, 420);
   } else {
     node.root.classList.remove('death');
     if(node._justCreated){
@@ -345,6 +386,8 @@ window.addEventListener('mouseup', (e)=>{
       const a = parseFloat(values[0]); const b = parseFloat(values[1]); rotation = Math.round(Math.atan2(b,a) * (180/Math.PI));
     }
     postToOpener({ type:'element_moved', source:'projection', payload:{ id, type, x:normX, y:normY, rotation }, timestamp: nowISO() });
+    // store last pixel pos so subsequent state syncs don't snap
+    lastPos[type + 's' === 'players' ? 'players' : (type === 'monster' ? 'monsters' : 'players')];
     activeDrag = null;
   }
   if(activeRotate){
@@ -368,7 +411,7 @@ window.addEventListener('mouseup', (e)=>{
 });
 
 // Remove all entity DOMs when map resets
-function clearEntities(){ dom.players.forEach(v=>v.root.remove()); dom.players.clear(); dom.monsters.forEach(v=>v.root.remove()); dom.monsters.clear(); }
+function clearEntities(){ dom.players.forEach(v=>v.root.remove()); dom.players.clear(); dom.monsters.forEach(v=>v.root.remove()); dom.monsters.clear(); lastPos.players.clear(); lastPos.monsters.clear(); }
 
 // Handle chest animation
 function showChest(style){
