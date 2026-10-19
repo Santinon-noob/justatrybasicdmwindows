@@ -281,7 +281,7 @@ function renderMarkersOnCanvas(){ clearMarkersDOM(); const wrap = document.getEl
 
 function clearMarkersDOM(){ const wrap = document.getElementById('map-canvas'); Array.from(wrap.querySelectorAll('.marker')).forEach(n=>n.remove()); Array.from(wrap.querySelectorAll('.marker-label')).forEach(n=>n.remove()); }
 
-function onMarkerClick(m){ if(removeMode){ if(confirm('Eliminar marcador "'+m.label+'" ?')){ removeMarkerById(m.id); renderMarkersOnCanvas(); sendToProjector('marker_removed', { id: m.id }); } return; } const newLabel = prompt('Editar etiqueta del marcador', m.label); if(newLabel !== null){ m.label = newLabel || m.label; const idx = currentMap.markers.findIndex(x=>x.id===m.id); if(idx!==-1) currentMap.markers[idx] = m; renderMarkersOnCanvas(); sendToProjector('marker_updated', { marker: m }); saveCurrentMapMarkers(); } }
+function onMarkerClick(m){ if(removeMode){ if(confirm('Eliminar marcador "'+m.label+'" ?')){ removeMarkerById(m.id); renderMarkersOnCanvas(); sendToProjector('marker_removed', { id: m.id }); } return; } const newLabel = prompt('Editar etiqueta del marcador', m.label); if(newLabel !== null){ m.label = newLabel || m.label; const idx = currentMap.markers.findIndex(x=>x.id===m.id); if(idx !== -1) currentMap.markers[idx] = m; renderMarkersOnCanvas(); sendToProjector('marker_updated', { marker: m }); saveCurrentMapMarkers(); } }
 
 function removeMarkerById(id){ if(!currentMap.markers) return; currentMap.markers = currentMap.markers.filter(m=>m.id !== id); renderMarkersOnCanvas(); sendToProjector('marker_removed', { id }); saveCurrentMapMarkers(); }
 
@@ -312,6 +312,13 @@ function saveStateLocally(){ savePlayers(); }
 
 // chest
 function openChest(style){ openProjectorWindow(); sendToProjector('chest_open', { style }); log('Cofre abierto: '+style); }
+
+// Dice and map quick actions
+function tirarDado(){ try{ const val = Math.floor(Math.random()*20) + 1; log('Tirada d20: ' + val); // send to projector for visual
+  openProjectorWindow(); sendToProjector('dice_roll', { value: val }); // also show a quick browser alert
+  try{ alert('Tirada d20: ' + val); }catch(e){} }catch(e){ console.error('tirarDado error', e); } }
+
+function mostrarMapa(){ if(!currentMap || !currentMap.src){ alert('No hay mapa cargado para mostrar en proyector'); return; } openProjectorWindow(); sendToProjector('map_changed', { map: { id: currentMap.id, name: currentMap.name, dataUrl: currentMap.src, markers: currentMap.markers || [] } }); log('Mapa mostrado en proyector: ' + (currentMap.name || 'Sin nombre')); }
 
 // Initialization helper
 function initDM(){ try{ loadPlayers(); renderPlayers(); renderMonsterButtons(); renderMapsList(); const maps = loadMaps(); if(maps.length>0){ loadMap(maps[0].id); } log('Interfaz DM lista — todo restaurado y funcionando'); }catch(err){ console.error('Init failed', err); const overlay=document.createElement('div'); overlay.id='dm-error-overlay'; overlay.innerText = 'Error inicializando DM UI:\n' + (err && err.message ? err.message : String(err)); document.body.appendChild(overlay); } }
