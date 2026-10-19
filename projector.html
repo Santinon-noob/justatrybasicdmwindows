@@ -11,52 +11,54 @@
   }
   html,body{height:100%;margin:0;background:var(--bg);color:#fff;font-family:Inter,Segoe UI,Arial,sans-serif;overflow:hidden}
   .stage{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:12px}
-  .toolbar{position:absolute;left:12px;top:12px;display:flex;gap:8px;z-index:60}
+  .toolbar{position:absolute;left:12px;top:12px;display:flex;gap:8px;z-index:60;/* hidden per requirements */visibility:hidden}
   .btn{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.06);color:#fff;padding:8px 10px;border-radius:6px;cursor:pointer}
   .status{position:absolute;right:12px;top:12px;padding:6px 10px;border-radius:6px;background:var(--panel);font-size:13px;color:var(--muted);z-index:60}
   .canvas-wrap{width:100%;height:100%;display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative}
   .map{position:relative;width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:#111}
   .map img{max-width:100%;max-height:100%;object-fit:contain;display:block}
-  .marker{position:absolute;width:20px;height:20px;border-radius:50%;background:var(--marker);border:2px solid var(--marker-border);transform:translate(-50%,-50%);display:flex;align-items:center;justify-content:center;font-size:11px;color:#111;font-weight:700;z-index:40}
-  .label{position:absolute;transform:translate(-50%,-140%);background:rgba(0,0,0,0.7);padding:4px 8px;border-radius:6px;font-size:13px;white-space:nowrap;color:#fff;z-index:41;pointer-events:none}
-  .hint{position:absolute;left:12px;bottom:12px;background:var(--panel);padding:8px;border-radius:6px;color:var(--muted);font-size:13px;z-index:60}
-  .fullscreen{position:absolute;right:12px;bottom:12px;background:var(--panel);padding:8px;border-radius:6px;color:var(--muted);cursor:pointer;z-index:60}
 
   .overlay-area{position:absolute;inset:0;z-index:50;pointer-events:none}
 
-  .monster-overlay{position:absolute;background:rgba(0,0,0,0.85);border:2px solid rgba(255,255,255,0.3);border-radius:10px;padding:10px;min-width:140px;max-width:220px;pointer-events:auto;cursor:grab;display:flex;flex-direction:column;gap:8px;box-shadow:0 4px 12px rgba(0,0,0,0.8)}
-  .monster-overlay:active{cursor:grabbing}
-  .monster-overlay-header{display:flex;gap:8px;align-items:flex-start}
-  .monster-overlay-img{width:50px;height:50px;border-radius:8px;object-fit:cover;flex-shrink:0}
-  .monster-overlay-info{flex:1}
-  .monster-overlay-name{font-weight:700;font-size:15px;color:#fff;margin:0}
-  .monster-overlay-hp{font-size:13px;color:var(--muted);margin:4px 0 0 0}
-  .monster-hp-bar{width:100%;height:14px;background:#111;border-radius:6px;overflow:hidden;border:1px solid rgba(255,255,255,0.15)}
-  .monster-hp-bar .fill{height:100%;background:linear-gradient(90deg,var(--danger),#ff6b6b);width:100%;transition:width 200ms}
-  .monster-states{display:flex;gap:5px;flex-wrap:wrap;margin-top:6px}
-  .state-symbol{width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#111;border:1px solid rgba(0,0,0,0.3)}
-  .state-veneno{background:#90EE90}
-  .state-fuego{background:#FF6347}
-  .state-congelacion{background:#87CEEB}
-  .state-paralisis{background:#FFD700}
+  /* Markers positioned relative to image bounds */
+  .marker{position:absolute;width:20px;height:20px;border-radius:50%;background:var(--marker);border:2px solid var(--marker-border);transform:translate(-50%,-50%);display:flex;align-items:center;justify-content:center;font-weight:700;color:#111;pointer-events:auto}
+  .label{position:absolute;transform:translate(-50%,-140%);background:rgba(0,0,0,0.7);padding:4px 8px;border-radius:6px;font-size:13px;white-space:nowrap;color:#fff;z-index:41;pointer-events:none}
 
-  .player-bar{position:absolute;background:rgba(0,0,0,0.85);border:2px solid rgba(76,175,80,0.4);border-radius:10px;padding:12px;min-width:170px;pointer-events:auto;cursor:grab;display:flex;flex-direction:column;gap:8px;z-index:50;box-shadow:0 4px 12px rgba(0,0,0,0.8)}
-  .player-bar:active{cursor:grabbing}
-  .player-bar-name{font-weight:700;font-size:15px;color:#fff;margin:0}
-  .player-bar-hp{font-size:13px;color:var(--muted);margin:4px 0 0 0}
-  .player-hp-bar{width:100%;height:18px;background:#111;border-radius:6px;overflow:hidden;border:1px solid rgba(255,255,255,0.15)}
-  .player-hp-bar .fill{height:100%;background:linear-gradient(90deg,#4CAF50,#81C784);width:100%;transition:width 200ms}
-  .player-states{display:flex;gap:5px;flex-wrap:wrap;margin-top:6px}
-  .player-state-symbol{width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#111;border:1px solid rgba(0,0,0,0.3)}
+  /* Overlays for creatures / players - no decorative borders on images */
+  .entity{position:absolute;pointer-events:auto;transform-origin:center center;display:flex;flex-direction:column;gap:6px;align-items:center}
+  .entity-img{width:64px;height:64px;object-fit:contain;display:block}
+  .hp-frame{background:rgba(0,0,0,0.6);padding:6px;border-radius:6px;display:flex;flex-direction:column;gap:6px;align-items:center;cursor:grab}
+  .hp-frame:active{cursor:grabbing}
+  .hp-bar{width:140px;height:12px;background:#111;border-radius:6px;overflow:hidden;border:1px solid rgba(255,255,255,0.06)}
+  .hp-bar .fill{height:100%;background:linear-gradient(90deg,var(--danger),#ff6b6b);width:100%;transition:width 200ms}
+  .hp-text{font-size:12px}
+
+  /* Draggable / rotatable handle */
+  .rotate-handle{width:12px;height:12px;border-radius:50%;background:#fff;opacity:0.8;position:absolute;right:-8px;top:-8px;cursor:pointer}
+
+  /* Spawn / death animations */
+  .spawn { animation:spawn 420ms ease-out forwards }
+  @keyframes spawn { from { opacity:0; transform:scale(0.6); } to { opacity:1; transform:scale(1); } }
+  .death { animation:death 420ms ease-in forwards }
+  @keyframes death { from { opacity:1; transform:scale(1); } to { opacity:0; transform:scale(0.6); } }
+
+  /* Chest overlay */
+  .chest-overlay{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);pointer-events:none;z-index:70;display:flex;flex-direction:column;align-items:center;gap:8px}
+  .chest-img{width:220px;height:160px;object-fit:contain;display:block;filter:drop-shadow(0 8px 18px rgba(0,0,0,0.8))}
+  .chest-flash{position:absolute;inset:0;border-radius:12px;pointer-events:none;mix-blend-mode:screen;opacity:0}
+  .chest-open{animation:chest-open 900ms cubic-bezier(.2,.9,.2,1) forwards}
+  @keyframes chest-open{ 0%{transform:translate(-50%,-50%) scale(0.6) } 60%{ transform:translate(-50%,-60%) scale(1.08) } 100%{ transform:translate(-50%,-50%) scale(1) } }
+  .flash-anim{animation:flash 600ms ease-out forwards}
+  @keyframes flash{ 0%{opacity:0} 30%{opacity:1} 100%{opacity:0} }
+
+  .hint{position:absolute;left:12px;bottom:12px;background:var(--panel);padding:8px;border-radius:6px;color:var(--muted);font-size:13px;z-index:60}
+  .fullscreen{position:absolute;right:12px;bottom:12px;background:var(--panel);padding:8px;border-radius:6px;color:var(--muted);cursor:pointer;z-index:60}
 </style>
 </head>
 <body>
   <div class="stage" id="stage">
     <div class="toolbar">
       <button class="btn" id="btn-sync">Sincronizar</button>
-      <button class="btn" id="btn-add">Añadir marcador</button>
-      <button class="btn" id="btn-edit-mode">Editar marcador</button>
-      <button class="btn" id="btn-remove-mode">Quitar marcador</button>
     </div>
 
     <div class="status" id="status">Estado: esperando handshake</div>
@@ -68,24 +70,16 @@
       <div class="overlay-area" id="overlay-area"></div>
     </div>
 
-    <div class="hint">Haz clic en el mapa para añadir marcador (modo añadir activado)</div>
     <div class="fullscreen" id="btn-full">Pantalla completa</div>
   </div>
 
 <script>
 let state = { players: {}, monsters: {}, currentMap: { id:null, name:null, dataUrl:null, markers:[] }, timestamp: null };
 let connected = false;
-let addMode = true;
-let editMode = false;
-let removeMode = false;
 const statusEl = document.getElementById('status');
 const mapEl = document.getElementById('map');
 const mapImg = document.getElementById('map-img');
 const overlayArea = document.getElementById('overlay-area');
-const btnSync = document.getElementById('btn-sync');
-const btnAdd = document.getElementById('btn-add');
-const btnEdit = document.getElementById('btn-edit-mode');
-const btnRemove = document.getElementById('btn-remove-mode');
 const btnFull = document.getElementById('btn-full');
 
 function nowISO(){ return new Date().toISOString(); }
@@ -93,306 +87,300 @@ function clamp01(v){ return Math.max(0, Math.min(1, v)); }
 function postToOpener(msg){ try{ if(window.opener && !window.opener.closed) window.opener.postMessage(msg, '*'); }catch(e){ console.warn('postToOpener failed', e); } }
 function setStatus(s){ statusEl.innerText = 'Estado: ' + s; }
 
-let draggedElement = null;
-let dragOffset = { x:0, y:0 };
-function makeDraggable(el){
-  el.addEventListener('mousedown', (e) => {
-    draggedElement = el;
-    dragOffset.x = e.clientX - el.offsetLeft;
-    dragOffset.y = e.clientY - el.offsetTop;
+// Utility: compute pixel coords inside map container from normalized coords relative to image displayed bounds
+function mapToContainerXY(normX, normY){
+  const imgRect = mapImg.getBoundingClientRect();
+  const containerRect = mapEl.getBoundingClientRect();
+  // If no image loaded, use container
+  const left = (imgRect.width > 0) ? (imgRect.left - containerRect.left + normX * imgRect.width) : (normX * containerRect.width);
+  const top  = (imgRect.height> 0) ? (imgRect.top  - containerRect.top  + normY * imgRect.height) : (normY * containerRect.height);
+  return { left, top };
+}
+
+// Keep DOM references to avoid recreating
+const dom = { players: new Map(), monsters: new Map(), markers: new Map() };
+
+function ensureMapImage(url){
+  if(!url){ mapImg.src = ''; return; }
+  if(mapImg.src === url) return;
+  mapImg.src = url;
+}
+
+function upsertMarkerDOM(m){
+  // Position based on image visible area
+  const existing = dom.markers.get(m.id);
+  const pos = mapToContainerXY(m.x, m.y);
+  if(existing){
+    existing.el.style.left = pos.left + 'px';
+    existing.el.style.top = pos.top + 'px';
+    existing.label.style.left = pos.left + 'px';
+    existing.label.style.top = pos.top + 'px';
+    return;
+  }
+  const el = document.createElement('div');
+  el.className = 'marker';
+  el.dataset.id = m.id;
+  el.innerText = '';
+  el.style.left = pos.left + 'px';
+  el.style.top = pos.top + 'px';
+  el.title = m.label || '';
+  el.addEventListener('click', (ev)=>{ ev.stopPropagation(); postToOpener({ type:'marker_clicked', source:'projection', payload:{ marker:m }, timestamp: nowISO() }); });
+  const lbl = document.createElement('div'); lbl.className='label'; lbl.innerText = m.label || '';
+  lbl.style.left = pos.left + 'px';
+  lbl.style.top = pos.top + 'px';
+  mapEl.appendChild(el);
+  mapEl.appendChild(lbl);
+  dom.markers.set(m.id, { el, label:lbl });
+}
+
+function clearAllMarkersDOM(){ dom.markers.forEach(v=>{ if(v.el) v.el.remove(); if(v.label) v.label.remove(); }); dom.markers.clear(); }
+
+function upsertPlayerDOM(key, p){
+  const id = key;
+  let node = dom.players.get(id);
+  if(!node){
+    // create
+    const wrap = document.createElement('div');
+    wrap.className = 'entity player';
+    wrap.dataset.id = id; wrap.dataset.type = 'player';
+    wrap.style.left = '50%'; wrap.style.top = '80%'; wrap.style.transform = 'translate(-50%,-50%) rotate(0deg)';
+    wrap.style.pointerEvents = 'auto';
+
+    const img = document.createElement('img'); img.className='entity-img'; img.alt = p.name || 'player'; img.src = p.img || '';
+    const hpFrame = document.createElement('div'); hpFrame.className='hp-frame';
+    const nameText = document.createElement('div'); nameText.className='hp-text'; nameText.innerText = p.name || '';
+    const hpBar = document.createElement('div'); hpBar.className='hp-bar'; const fill = document.createElement('div'); fill.className='fill'; hpBar.appendChild(fill);
+    const hpText = document.createElement('div'); hpText.className='hp-text';
+    const rotateHandle = document.createElement('div'); rotateHandle.className='rotate-handle';
+
+    hpFrame.appendChild(nameText); hpFrame.appendChild(hpBar); hpFrame.appendChild(hpText);
+    wrap.appendChild(img); wrap.appendChild(hpFrame); wrap.appendChild(rotateHandle);
+    overlayArea.appendChild(wrap);
+
+    makeElementInteractive(wrap, id, 'player');
+
+    node = { root: wrap, img, hpBar, fill, hpText, nameText };
+    dom.players.set(id, node);
+  }
+  // update content only
+  node.nameText.innerText = p.name || node.nameText.innerText;
+  node.hpText.innerText = `${p.hp} / ${p.maxHp}`;
+  const percent = Math.round((p.hp / p.maxHp) * 100) || 0;
+  node.fill.style.width = percent + '%';
+  // apply position/rotation from state if present
+  if(typeof p.x === 'number' && typeof p.y === 'number'){
+    const pos = mapToContainerXY(clamp01(p.x), clamp01(p.y));
+    node.root.style.left = pos.left + 'px'; node.root.style.top = pos.top + 'px';
+  }
+  if(typeof p.rotation === 'number'){
+    node.root.style.transform = `translate(-50%,-50%) rotate(${p.rotation}deg)`;
+  }
+  // if hp 0 animate disappearance
+  if(p.hp === 0){
+    node.root.classList.add('death');
+    setTimeout(()=>{ if(node.root) node.root.remove(); dom.players.delete(id); }, 420);
+  } else {
+    node.root.classList.remove('death');
+    node.root.classList.add('spawn');
+    setTimeout(()=> node.root.classList.remove('spawn'), 600);
+  }
+}
+
+function upsertMonsterDOM(uid, m){
+  let node = dom.monsters.get(uid);
+  if(!node){
+    const wrap = document.createElement('div');
+    wrap.className = 'entity monster';
+    wrap.dataset.id = uid; wrap.dataset.type = 'monster';
+    wrap.style.left = '50%'; wrap.style.top = '50%'; wrap.style.transform = 'translate(-50%,-50%) rotate(0deg)';
+    wrap.style.pointerEvents = 'auto';
+
+    const img = document.createElement('img'); img.className='entity-img'; img.alt = m.name || 'monster'; if(m.img) img.src = m.img;
+    const hpFrame = document.createElement('div'); hpFrame.className='hp-frame';
+    const nameText = document.createElement('div'); nameText.className='hp-text'; nameText.innerText = m.name || '';
+    const hpBar = document.createElement('div'); hpBar.className='hp-bar'; const fill = document.createElement('div'); fill.className='fill'; hpBar.appendChild(fill);
+    const hpText = document.createElement('div'); hpText.className='hp-text';
+    const rotateHandle = document.createElement('div'); rotateHandle.className='rotate-handle';
+
+    hpFrame.appendChild(nameText); hpFrame.appendChild(hpBar); hpFrame.appendChild(hpText);
+    wrap.appendChild(img); wrap.appendChild(hpFrame); wrap.appendChild(rotateHandle);
+    overlayArea.appendChild(wrap);
+
+    makeElementInteractive(wrap, uid, 'monster');
+
+    node = { root: wrap, img, hpBar, fill, hpText, nameText };
+    dom.monsters.set(uid, node);
+  }
+  node.nameText.innerText = m.name || node.nameText.innerText;
+  node.hpText.innerText = `${m.hp} / ${m.maxHp}`;
+  const percent = Math.round((m.hp / m.maxHp) * 100) || 0;
+  node.fill.style.width = percent + '%';
+
+  if(typeof m.x === 'number' && typeof m.y === 'number'){
+    const pos = mapToContainerXY(clamp01(m.x), clamp01(m.y));
+    node.root.style.left = pos.left + 'px'; node.root.style.top = pos.top + 'px';
+  }
+  if(typeof m.rotation === 'number'){
+    node.root.style.transform = `translate(-50%,-50%) rotate(${m.rotation}deg)`;
+  }
+
+  if(m.hp === 0){
+    node.root.classList.add('death');
+    setTimeout(()=>{ if(node.root) node.root.remove(); dom.monsters.delete(uid); }, 420);
+  } else {
+    node.root.classList.remove('death');
+    node.root.classList.add('spawn');
+    setTimeout(()=> node.root.classList.remove('spawn'), 600);
+  }
+}
+
+// Make an overlay element draggable and rotatable. When finished, post position/rotation back to DM
+let activeDrag = null;
+let activeRotate = null;
+function makeElementInteractive(el, id, type){
+  el.addEventListener('mousedown', e=>{
+    if(e.target.classList.contains('rotate-handle')) return; // rotate starts separately
+    activeDrag = { el, startX: e.clientX, startY: e.clientY, origLeft: el.offsetLeft, origTop: el.offsetTop };
     e.preventDefault();
   });
+  // rotate handle
+  const handle = el.querySelector('.rotate-handle');
+  if(handle){
+    handle.addEventListener('mousedown', (e)=>{
+      activeRotate = { el, id, type };
+      e.stopPropagation(); e.preventDefault();
+    });
+  }
 }
-document.addEventListener('mousemove', (e) => {
-  if(!draggedElement) return;
-  draggedElement.style.left = (e.clientX - dragOffset.x) + 'px';
-  draggedElement.style.top = (e.clientY - dragOffset.y) + 'px';
+
+window.addEventListener('mousemove', (e)=>{
+  if(activeDrag){
+    const dx = e.clientX - activeDrag.startX; const dy = e.clientY - activeDrag.startY;
+    activeDrag.el.style.left = (activeDrag.origLeft + dx) + 'px';
+    activeDrag.el.style.top = (activeDrag.origTop + dy) + 'px';
+  }
+  if(activeRotate){
+    const rect = activeRotate.el.getBoundingClientRect();
+    const cx = rect.left + rect.width/2; const cy = rect.top + rect.height/2;
+    const ang = Math.atan2(e.clientY - cy, e.clientX - cx) * (180/Math.PI);
+    activeRotate.el.style.transform = `translate(-50%,-50%) rotate(${ang}deg)`;
+  }
 });
-document.addEventListener('mouseup', () => { draggedElement = null; });
+window.addEventListener('mouseup', (e)=>{
+  if(activeDrag){
+    // compute normalized coords relative to image
+    const el = activeDrag.el; const id = el.dataset.id; const type = el.dataset.type;
+    const containerRect = mapEl.getBoundingClientRect();
+    const imgRect = mapImg.getBoundingClientRect();
+    // element center coords
+    const cx = el.offsetLeft + el.offsetWidth/2; const cy = el.offsetTop + el.offsetHeight/2; // relative to container
+    // convert to normalized within image
+    const normX = imgRect.width>0 ? clamp01((cx - (imgRect.left - containerRect.left)) / imgRect.width) : clamp01(cx / containerRect.width);
+    const normY = imgRect.height>0? clamp01((cy - (imgRect.top - containerRect.top)) / imgRect.height) : clamp01(cy / containerRect.height);
+    // rotation
+    const transform = getComputedStyle(el).transform;
+    let rotation = 0;
+    if(transform && transform !== 'none'){
+      const values = transform.split('(')[1].split(')')[0].split(',');
+      const a = parseFloat(values[0]); const b = parseFloat(values[1]); rotation = Math.round(Math.atan2(b,a) * (180/Math.PI));
+    }
+    postToOpener({ type:'element_moved', source:'projection', payload:{ id, type, x:normX, y:normY, rotation }, timestamp: nowISO() });
+    activeDrag = null;
+  }
+  if(activeRotate){
+    const el = activeRotate.el; const id = el.dataset.id; const type = el.dataset.type;
+    const transform = getComputedStyle(el).transform;
+    let rotation = 0;
+    if(transform && transform !== 'none'){
+      const values = transform.split('(')[1].split(')')[0].split(',');
+      const a = parseFloat(values[0]); const b = parseFloat(values[1]); rotation = Math.round(Math.atan2(b,a) * (180/Math.PI));
+    }
+    // compute center to normalized coords
+    const containerRect = mapEl.getBoundingClientRect();
+    const imgRect = mapImg.getBoundingClientRect();
+    const cx = el.offsetLeft + el.offsetWidth/2; const cy = el.offsetTop + el.offsetHeight/2;
+    const normX = imgRect.width>0 ? clamp01((cx - (imgRect.left - containerRect.left)) / imgRect.width) : clamp01(cx / containerRect.width);
+    const normY = imgRect.height>0? clamp01((cy - (imgRect.top - containerRect.top)) / imgRect.height) : clamp01(cy / containerRect.height);
 
-function getStateIcon(stateName){ 
-  const icons = { 'Veneno': '☠', 'Fuego': '🔥', 'Congelación': '❄', 'Parálisis': '⚡' }; 
-  return icons[stateName] || '•'; 
-}
-function getStateClass(stateName){ 
-  const classes = { 'Veneno': 'state-veneno', 'Fuego': 'state-fuego', 'Congelación': 'state-congelacion', 'Parálisis': 'state-paralisis' }; 
-  return classes[stateName] || ''; 
+    postToOpener({ type:'element_moved', source:'projection', payload:{ id, type, x:normX, y:normY, rotation }, timestamp: nowISO() });
+    activeRotate = null;
+  }
+});
+
+// Remove all entity DOMs when map resets
+function clearEntities(){ dom.players.forEach(v=>v.root.remove()); dom.players.clear(); dom.monsters.forEach(v=>v.root.remove()); dom.monsters.clear(); }
+
+// Handle chest animation
+function showChest(style){
+  const existing = document.getElementById('chest-overlay'); if(existing) existing.remove();
+  const overlay = document.createElement('div'); overlay.id='chest-overlay'; overlay.className='chest-overlay';
+  const img = document.createElement('img'); img.className='chest-img';
+  // pick image per style — use basic embedded SVG placeholders if not provided
+  const chestMap = {
+    normal: 'https://raw.githubusercontent.com/Santinon-noob/justatrybasicdmwindows/main/assets/chest-normal.png',
+    superior: 'https://raw.githubusercontent.com/Santinon-noob/justatrybasicdmwindows/main/assets/chest-superior.png',
+    legend: 'https://raw.githubusercontent.com/Santinon-noob/justatrybasicdmwindows/main/assets/chest-legend.png'
+  };
+  img.src = chestMap[style] || chestMap.normal;
+  overlay.appendChild(img);
+  const flash = document.createElement('div'); flash.className='chest-flash'; overlay.appendChild(flash);
+  document.body.appendChild(overlay);
+  img.classList.add('chest-open'); flash.classList.add('flash-anim');
+  setTimeout(()=>{ overlay.remove(); }, 1400);
 }
 
+// Sync incoming state without recreating existing elements when possible
 window.addEventListener('message', (ev)=>{
   const m = ev.data || {};
   if(!m.type) return;
   switch(m.type){
     case 'handshake':
-      if(m.payload && m.payload.state){
-        state = m.payload.state;
-        state.timestamp = m.timestamp || nowISO();
-        renderMap(); 
-        renderMarkers(); 
-        renderMonstersOverlay(); 
-        renderPlayersOverlay(); 
-        setStatus('conectado (handshake recibido)'); 
-        connected = true; 
-        postToOpener({ type:'handshake_ack', source:'projection', ready:true, timestamp: nowISO() });
-      }
-      break;
     case 'state_sync':
       if(m.payload && m.payload.state){
-        state = m.payload.state; 
-        state.timestamp = m.timestamp || nowISO();
-        renderMap(); 
-        renderMarkers(); 
-        renderMonstersOverlay(); 
-        renderPlayersOverlay(); 
-        setStatus('estado sincronizado'); 
+        const s = m.payload.state;
+        state = s; state.timestamp = m.timestamp || nowISO();
+        // map
+        ensureMapImage(state.currentMap && state.currentMap.dataUrl);
+        // markers
+        clearAllMarkersDOM();
+        if(state.currentMap && Array.isArray(state.currentMap.markers)){
+          state.currentMap.markers.forEach(upsertMarkerDOM);
+        }
+        // players
+        Object.entries(state.players || {}).forEach(([k,p])=> upsertPlayerDOM(k, p));
+        // monsters
+        Object.entries(state.monsters || {}).forEach(([k,mon])=> upsertMonsterDOM(k, mon));
+        setStatus('estado sincronizado');
+        connected = true;
         postToOpener({ type:'ack', source:'projection', payload:{ ref:'state_sync' }, timestamp: nowISO() });
       }
       break;
     case 'marker_added':
-      if(m.payload && m.payload.marker){ 
-        upsertMarker(m.payload.marker); 
-        renderMarkers(); 
-        setStatus('marcador añadido desde DM'); 
-        postToOpener({ type:'ack', source:'projection', payload:{ ref: 'marker_added:'+m.payload.marker.id }, timestamp: nowISO() }); 
-      }
-      break;
     case 'marker_updated':
-      if(m.payload && m.payload.marker){ 
-        upsertMarker(m.payload.marker); 
-        renderMarkers(); 
-        setStatus('marcador actualizado desde DM'); 
-        postToOpener({ type:'ack', source:'projection', payload:{ ref: 'marker_updated:'+m.payload.marker.id }, timestamp: nowISO() }); 
-      }
+      if(m.payload && m.payload.marker){ upsertMarkerDOM(m.payload.marker); }
       break;
     case 'marker_removed':
-      if(m.payload && m.payload.id){ 
-        removeMarkerById(m.payload.id); 
-        renderMarkers(); 
-        setStatus('marcador eliminado desde DM'); 
-        postToOpener({ type:'ack', source:'projection', payload:{ ref: 'marker_removed:'+m.payload.id }, timestamp: nowISO() }); 
-      }
+      if(m.payload && m.payload.id){ const id = m.payload.id; const entry = dom.markers.get(id); if(entry){ if(entry.el) entry.el.remove(); if(entry.label) entry.label.remove(); dom.markers.delete(id);} }
       break;
     case 'map_changed':
-      if(m.payload && m.payload.map){ 
-        state.currentMap = m.payload.map; 
-        renderMap(); 
-        renderMarkers(); 
-        setStatus('mapa cambiado desde DM'); 
-        postToOpener({ type:'ack', source:'projection', payload:{ ref: 'map_changed:'+m.payload.map.id }, timestamp: nowISO() }); 
-      }
+      if(m.payload && m.payload.map){ ensureMapImage(m.payload.map.dataUrl); }
+      break;
+    case 'chest_open':
+      if(m.payload && m.payload.style){ showChest(m.payload.style); }
       break;
     default:
       break;
   }
 });
 
-function renderMap(){
-  clearMarkersDOM();
-  if(!state.currentMap || !state.currentMap.dataUrl){ 
-    mapImg.src=''; 
-    setStatus('sin mapa proyectado'); 
-    return; 
-  }
-  mapImg.src = state.currentMap.dataUrl;
-  setStatus('mapa cargado: ' + (state.currentMap.name || 'sin nombre'));
-  mapImg.onload = ()=> renderMarkers();
-}
-
-function clearMarkersDOM(){
-  Array.from(mapEl.querySelectorAll('.marker')).forEach(n=>n.remove());
-  Array.from(mapEl.querySelectorAll('.label')).forEach(n=>n.remove());
-}
-
-function renderMarkers(){
-  clearMarkersDOM();
-  if(!state.currentMap || !Array.isArray(state.currentMap.markers)) return;
-  state.currentMap.markers.forEach((m, idx)=>{
-    const el = document.createElement('div');
-    el.className='marker';
-    el.style.left = (m.x * 100) + '%';
-    el.style.top = (m.y * 100) + '%';
-    el.dataset.id = m.id;
-    el.innerText=(idx+1);
-    el.title = m.label || '';
-    el.addEventListener('click', (ev)=>{ ev.stopPropagation(); onMarkerClick(m); });
-    const lbl = document.createElement('div');
-    lbl.className='label';
-    lbl.style.left=(m.x * 100)+'%';
-    lbl.style.top=(m.y * 100)+'%';
-    lbl.innerText = m.label || '';
-    mapEl.appendChild(el);
-    mapEl.appendChild(lbl);
-  });
-}
-
-function formatStateMarkup(states){
-  if(!states || states.length === 0) return '';
-  return states.map(s => `<div class="state-symbol ${getStateClass(s)}" title="${s}">${getStateIcon(s)}</div>`).join('');
-}
-
-function renderMonstersOverlay(){
-  const existing = Array.from(overlayArea.querySelectorAll('.monster-overlay'));
-  existing.forEach(el => el.remove());
-  if(!state.monsters || Object.keys(state.monsters).length === 0) return;
-  
-  Object.entries(state.monsters).forEach(([uid, monster], idx) => {
-    const card = document.createElement('div');
-    card.className='monster-overlay';
-    card.style.left = (20 + idx * 240) + 'px';
-    card.style.top = '20px';
-
-    const hpPercent = Math.round((monster.hp / monster.maxHp) * 100);
-    const stateMarkup = formatStateMarkup(monster.states);
-
-    card.innerHTML = `
-      <div class="monster-overlay-header">
-        ${monster.img ? `<img src="${monster.img}" class="monster-overlay-img" alt="${monster.name}">` : ''}
-        <div class="monster-overlay-info">
-          <p class="monster-overlay-name">${monster.name}</p>
-          <p class="monster-overlay-hp">${monster.hp} / ${monster.maxHp}</p>
-        </div>
-      </div>
-      <div class="monster-hp-bar"><div class="fill" style="width:${hpPercent}%"></div></div>
-      ${stateMarkup ? `<div class="monster-states">${stateMarkup}</div>` : ''}
-    `;
-
-    overlayArea.appendChild(card);
-    makeDraggable(card);
-  });
-}
-
-function renderPlayersOverlay(){
-  const existing = Array.from(overlayArea.querySelectorAll('.player-bar'));
-  existing.forEach(el => el.remove());
-  if(!state.players || Object.keys(state.players).length === 0) return;
-  
-  Object.entries(state.players).forEach(([key, player], idx) => {
-    const bar = document.createElement('div');
-    bar.className='player-bar';
-    bar.style.left = (20 + idx * 200) + 'px';
-    bar.style.top = (window.innerHeight - 140) + 'px';
-
-    const hpPercent = Math.round((player.hp / player.maxHp) * 100);
-    const stateMarkup = formatStateMarkup(player.states);
-
-    bar.innerHTML = `
-      <p class="player-bar-name">${player.name}</p>
-      <p class="player-bar-hp">${player.hp} / ${player.maxHp}</p>
-      <div class="player-hp-bar"><div class="fill" style="width:${hpPercent}%"></div></div>
-      ${stateMarkup ? `<div class="player-states">${stateMarkup}</div>` : ''}
-    `;
-
-    overlayArea.appendChild(bar);
-    makeDraggable(bar);
-  });
-}
-
-function upsertMarker(marker){
-  marker.x = clamp01(marker.x);
-  marker.y = clamp01(marker.y);
-  state.currentMap.markers = state.currentMap.markers || [];
-  const idx = state.currentMap.markers.findIndex(x=>x.id === marker.id);
-  if(idx === -1){ state.currentMap.markers.push(marker); }
-  else { state.currentMap.markers[idx] = marker; }
-}
-
-function removeMarkerById(id){
-  state.currentMap.markers = (state.currentMap.markers || []).filter(m=>m.id !== id);
-}
-
-const canvas = document.querySelector('.canvas-wrap');
-canvas.addEventListener('click', (ev)=>{
-  if(ev.target !== mapEl && ev.target !== mapImg) return;
-  if(!state.currentMap || !state.currentMap.dataUrl) return;
-  
-  const rect = mapEl.getBoundingClientRect();
-  const x = (ev.clientX - rect.left) / rect.width;
-  const y = (ev.clientY - rect.top) / rect.height;
-  
-  if(removeMode){
-    const nearest = findNearestMarker(x,y,0.03);
-    if(nearest){ if(confirm('Eliminar marcador "'+nearest.label+'" ?')){ removeMarkerById(nearest.id); renderMarkers(); postMarkerRemoved(nearest.id); } }
-    return;
-  }
-  if(!addMode){ setStatus('Activa modo añadir para colocar marcadores'); return; }
-  
-  const label = prompt('Nombre del punto de interés (dejar vacío para "Punto")') || 'Punto';
-  const id = 'm-' + Date.now();
-  const marker = { id, x: clamp01(x), y: clamp01(y), label };
-  upsertMarker(marker);
-  renderMarkers();
-  postMarkerAdded(marker);
-});
-
-function onMarkerClick(m){
-  if(removeMode){
-    if(confirm('Eliminar marcador "'+m.label+'" ?')){ removeMarkerById(m.id); renderMarkers(); postMarkerRemoved(m.id); }
-    return;
-  }
-  if(editMode){
-    const newLabel = prompt('Editar etiqueta del marcador', m.label);
-    if(newLabel !== null){
-      m.label = newLabel || m.label;
-      upsertMarker(m);
-      renderMarkers();
-      postMarkerUpdated(m);
-    }
-    return;
-  }
-  setStatus('Marcador: ' + (m.label || '(sin etiqueta)'));
-}
-
-function findNearestMarker(x,y,threshold){
-  if(!state.currentMap.markers) return null;
-  let best=null, bestD=Infinity;
-  state.currentMap.markers.forEach(m=>{
-    const dx = m.x - x, dy = m.y - y, d = Math.sqrt(dx*dx + dy*dy);
-    if(d < bestD){ bestD = d; best = m; }
-  });
-  return bestD <= threshold ? best : null;
-}
-
-function postMarkerAdded(marker){
-  const msg = { type:'marker_added', source:'projection', payload:{ marker }, timestamp: nowISO() };
-  postToOpener(msg);
-  setStatus('marcador añadido y notificado al DM');
-}
-function postMarkerUpdated(marker){
-  const msg = { type:'marker_updated', source:'projection', payload:{ marker }, timestamp: nowISO() };
-  postToOpener(msg);
-  setStatus('marcador actualizado y notificado al DM');
-}
-function postMarkerRemoved(id){
-  const msg = { type:'marker_removed', source:'projection', payload:{ id }, timestamp: nowISO() };
-  postToOpener(msg);
-  setStatus('marcador eliminado y notificado al DM');
-}
-
-btnSync.addEventListener('click', ()=> { postToOpener({ type:'request_state', source:'projection', timestamp: nowISO() }); setStatus('solicitando estado al DM'); });
-btnAdd.addEventListener('click', ()=> { addMode = true; editMode = false; removeMode = false; setStatus('modo añadir'); });
-btnEdit.addEventListener('click', ()=> { editMode = !editMode; addMode = !editMode; removeMode = false; setStatus(editMode ? 'modo editar' : 'modo añadir'); });
-btnRemove.addEventListener('click', ()=> { removeMode = !removeMode; addMode = !removeMode; editMode = false; setStatus(removeMode ? 'modo quitar' : 'modo añadir'); });
 btnFull.addEventListener('click', ()=> { if(!document.fullscreenElement) document.documentElement.requestFullscreen().catch(()=>{}); else document.exitFullscreen().catch(()=>{}); });
 
+// Initial handshake ping
 let handshakeAttempts = 0;
-function tryHandshakeRetry(){
-  if(handshakeAttempts >= 6) return;
-  handshakeAttempts++;
-  setStatus('esperando handshake del DM (intento '+handshakeAttempts+')');
-  postToOpener({ type:'projection_ready', source:'projection', timestamp: nowISO() });
-  setTimeout(tryHandshakeRetry, 1200 * handshakeAttempts);
-}
+function tryHandshakeRetry(){ if(handshakeAttempts >= 6) return; handshakeAttempts++; setStatus('esperando handshake del DM (intento '+handshakeAttempts+')'); postToOpener({ type:'projection_ready', source:'projection', timestamp: nowISO() }); setTimeout(tryHandshakeRetry, 1200 * handshakeAttempts); }
 setTimeout(tryHandshakeRetry, 800);
 
-renderMap();
-renderMarkers();
-renderMonstersOverlay();
-renderPlayersOverlay();
 setStatus('listo para handshake');
-
-setTimeout(()=> {
-  if(!window.opener || window.opener.closed) setStatus('sin DM detectado');
-}, 30000);
 </script>
 </body>
 </html>
