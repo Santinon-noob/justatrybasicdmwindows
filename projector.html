@@ -191,8 +191,9 @@ function upsertPlayerDOM(key, p){
 
     makeElementInteractive(wrap, id, 'player');
 
-    node = { root: wrap, img, hpBar, fill, hpText, nameText, statusWrap };
+    node = { root: wrap, img, hpFrame, hpBar, fill, hpText, nameText, statusWrap };
     dom.players.set(id, node);
+    node._justCreated = true;
   }
   // update content only
   node.nameText.innerText = p.name || node.nameText.innerText;
@@ -223,7 +224,7 @@ function upsertPlayerDOM(key, p){
   } else {
     node.root.classList.remove('death');
     // only add spawn on newly created nodes to avoid visual jump on updates
-    if(!node._justCreated){
+    if(node._justCreated){
       node.root.classList.add('spawn');
       setTimeout(()=> node.root.classList.remove('spawn'), 600);
     }
@@ -256,8 +257,9 @@ function upsertMonsterDOM(uid, m){
 
     makeElementInteractive(wrap, uid, 'monster');
 
-    node = { root: wrap, img, hpBar, fill, hpText, nameText, statusWrap };
+    node = { root: wrap, img, hpFrame, hpBar, fill, hpText, nameText, statusWrap };
     dom.monsters.set(uid, node);
+    node._justCreated = true;
   }
   node.nameText.innerText = m.name || node.nameText.innerText;
   node.hpText.innerText = `${m.hp} / ${m.maxHp}`;
@@ -275,6 +277,7 @@ function upsertMonsterDOM(uid, m){
     }
   }
   if(typeof m.rotation === 'number'){
+    node.root.classList.remove('spawn');
     node.root.style.transform = `translate(-50%,-50%) rotate(${m.rotation}deg)`;
   }
 
@@ -283,7 +286,7 @@ function upsertMonsterDOM(uid, m){
     setTimeout(()=>{ if(node.root) node.root.remove(); dom.monsters.delete(uid); }, 420);
   } else {
     node.root.classList.remove('death');
-    if(!node._justCreated){
+    if(node._justCreated){
       node.root.classList.add('spawn');
       setTimeout(()=> node.root.classList.remove('spawn'), 600);
     }
