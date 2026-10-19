@@ -32,6 +32,7 @@
   .map-item{display:flex;gap:8px;align-items:center;background:#1a1a1a;padding:6px;border-radius:6px}
   .map-thumb{width:56px;height:40px;object-fit:cover;border-radius:4px;border:1px solid rgba(255,255,255,0.04)}
   .log{background:#0f0f0f;border-radius:8px;padding:8px;height:22vh;overflow:auto;color:var(--muted);font-size:0.9rem}
+  #dm-error-overlay{position:fixed;left:12px;top:12px;right:12px;padding:12px;border-radius:8px;background:rgba(180,50,50,0.95);color:#fff;z-index:9999;white-space:pre-wrap}
 </style>
 </head>
 <body>
@@ -143,7 +144,7 @@
   </div>
 
 <script>
-function slugify(s){ return String(s||'').normalize('NFD').replace(/[ - -  -  -  - ]/g,'').replace(/[^a-zA-Z0-9\s-]/g,'').trim().toLowerCase().replace(/\s+/g,'-'); }
+function slugify(s){ return String(s||'').normalize('NFD').replace(/[^\w\s-]/g,'').replace(/[\u0300-\u036f]/g,'').trim().toLowerCase().replace(/\s+/g,'-'); }
 function escapeHtml(s){ return String(s).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;'); }
 function log(msg){ const el=document.getElementById('log'); const t=new Date().toLocaleTimeString(); el.innerHTML += `<div>[${t}] ${escapeHtml(msg)}</div>`; el.scrollTop = el.scrollHeight; }
 
@@ -312,8 +313,18 @@ function saveStateLocally(){ savePlayers(); }
 // chest
 function openChest(style){ openProjectorWindow(); sendToProjector('chest_open', { style }); log('Cofre abierto: '+style); }
 
-// handshake from projector
-setTimeout(()=>{ loadPlayers(); renderPlayers(); renderMonsterButtons(); renderMapsList(); const maps = loadMaps(); if(maps.length>0){ loadMap(maps[0].id); } log('Interfaz DM lista — todo restaurado y funcionando'); }, 60);
+// Initialization helper
+function initDM(){ try{ loadPlayers(); renderPlayers(); renderMonsterButtons(); renderMapsList(); const maps = loadMaps(); if(maps.length>0){ loadMap(maps[0].id); } log('Interfaz DM lista — todo restaurado y funcionando'); }catch(err){ console.error('Init failed', err); const overlay=document.createElement('div'); overlay.id='dm-error-overlay'; overlay.innerText = 'Error inicializando DM UI:\n' + (err && err.message ? err.message : String(err)); document.body.appendChild(overlay); } }
+if(document.readyState === 'loading'){ document.addEventListener('DOMContentLoaded', initDM); } else { initDM(); }
+
+// Expose common functions to global window in case any were blocked by early errors
+(function expose(){ const names = ['invocarMonstruo','abrirModalCrearMonstruo','addPlayer','tirarDado','mostrarMapa','reiniciar','limpiarPreview','openChest','saveCurrentMap','previewMapFile','toggleAddMode','toggleRemoveMode','clearMarkersCurrentMap','removePlayer','applyManual','setMaxHP','restoreToMax','seleccionarJugador','invocarMonstruo']; names.forEach(name=>{ try{ if(typeof window[name] !== 'function'){ const fn = eval(name); if(typeof fn === 'function') window[name] = fn; } }catch(e){} }); })();
+
+// Global error overlay for uncaught errors
+window.addEventListener('error', function(ev){ try{ console.error('Uncaught error:', ev.error || ev.message || ev); const overlay = document.getElementById('dm-error-overlay') || document.createElement('div'); overlay.id='dm-error-overlay'; overlay.innerText = 'Error en la interfaz DM:\n' + (ev.message || (ev.error && ev.error.message) || String(ev)); if(!document.getElementById('dm-error-overlay')) document.body.appendChild(overlay); }catch(e){ console.error('Error showing overlay', e); } });
+
+// Also catch unhandledrejections
+window.addEventListener('unhandledrejection', function(ev){ try{ console.error('Unhandled rejection', ev.reason); const overlay = document.getElementById('dm-error-overlay') || document.createElement('div'); overlay.id='dm-error-overlay'; overlay.innerText = 'Error en la interfaz DM (promise):\n' + (ev.reason && ev.reason.message ? ev.reason.message : String(ev.reason)); if(!document.getElementById('dm-error-overlay')) document.body.appendChild(overlay); }catch(e){ console.error('Error showing overlay', e); } });
 
 window.addEventListener('resize', ()=> { document.querySelectorAll('.monster-grid, .players-grid, .monsters-active, .maps-list').forEach(el=>{ el.style.display='none'; void el.offsetHeight; el.style.display=''; }); });
 </script>
